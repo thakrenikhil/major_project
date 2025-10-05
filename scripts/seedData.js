@@ -333,21 +333,41 @@ const seedData = async () => {
       }
     ]);
 
-    // Create sample progress records
-    await Progress.create([
+    // Issue sample certificates
+    await Certificate.create([
       {
-        student_id: students[0]._id,
         course_id: courses[0]._id,
-        attendance_pct: 100.0,
-        credits_earned: 3.0
+        student_id: students[0]._id,
+        issued_date: new Date('2024-04-16'),
+        certificate_url: 'https://example.com/certificates/intro-prog-amit.pdf'
       },
       {
-        student_id: students[1]._id,
         course_id: courses[0]._id,
-        attendance_pct: 100.0,
-        credits_earned: 3.0
+        student_id: students[1]._id,
+        issued_date: new Date('2024-04-16'),
+        certificate_url: 'https://example.com/certificates/intro-prog-priya.pdf'
       }
     ]);
+
+    // Compute and persist progress based on attendance and credits
+    const computeProgress = async (studentId, courseId) => {
+      const records = await Attendance.find({ course_id: courseId, student_id: studentId });
+      const total = records.length;
+      const present = records.filter(r => r.status === 'present').length;
+      const attendancePct = total === 0 ? 0 : (present / total) * 100;
+
+      const credits = await Credit.find({ course_id: courseId, student_id: studentId });
+      const creditsSum = credits.reduce((sum, c) => sum + parseFloat(c.credits_earned.toString()), 0);
+
+      await Progress.findOneAndUpdate(
+        { student_id: studentId, course_id: courseId },
+        { $set: { attendance_pct: attendancePct, credits_earned: creditsSum } },
+        { upsert: true }
+      );
+    };
+
+    await computeProgress(students[0]._id, courses[0]._id);
+    await computeProgress(students[1]._id, courses[0]._id);
 
     console.log('\n🎉 Comprehensive seed data created successfully!');
     console.log('\nLogin credentials for testing:');
@@ -597,19 +617,30 @@ Content-Type: application/json
 }
 */
 
-// 11. Mark Attendance (Manual - requires direct database access)
+// 11. Mark Attendance (Faculty/Admin/Nodal)
 /*
-Note: Attendance marking would require a new endpoint like:
-
 POST http://localhost:3000/api/auth/attendance
 Authorization: Bearer YOUR_JWT_TOKEN
 Content-Type: application/json
 
 {
-  "course_id": "64f5a1b2c3d4e5f6g7h8i9j3",
-  "student_id": "64f5a1b2c3d4e5f6g7h8i9j5",
+  "course_id": "[COURSE_ID]",
+  "student_id": "[STUDENT_ID]",
   "date": "2024-01-20",
-  "status": "present"
+  "status": "present" // one of: present, absent, late, excused
+}
+
+Response:
+{
+  "message": "Attendance recorded",
+  "attendance": {
+    "_id": "...",
+    "course_id": "...",
+    "student_id": "...",
+    "date": "2024-01-20T00:00:00.000Z",
+    "status": "present",
+    "marked_by": "..."
+  }
 }
 */
 
@@ -643,22 +674,25 @@ Content-Type: application/json
 }
 */
 
-// 14. Get Student Progress (Manual - requires direct database access)
+// 14. Get Student Progress
 /*
-Note: Progress tracking would require a new endpoint like:
+// Students can omit student_id to see their own; staff must provide student_id
 
-GET http://localhost:3000/api/auth/progress?student_id=64f5a1b2c3d4e5f6g7h8i9j5
+GET http://localhost:3000/api/auth/progress?student_id=[STUDENT_ID]
 Authorization: Bearer YOUR_JWT_TOKEN
+
+// Optional: single course
+GET http://localhost:3000/api/auth/progress?student_id=[STUDENT_ID]&course_id=[COURSE_ID]
 
 Response:
 {
   "progress": [
     {
-      "_id": "64f5a1b2c3d4e5f6g7h8i9j8",
-      "student_id": "64f5a1b2c3d4e5f6g7h8i9j5",
-      "course_id": "64f5a1b2c3d4e5f6g7h8i9j3",
-      "attendance_pct": 100.0,
-      "credits_earned": 3.0,
+      "_id": "...",
+      "student_id": "...",
+      "course_id": "...",
+      "attendance_pct": 100,
+      "credits_earned": 3,
       "createdAt": "2024-01-15T10:30:00.000Z",
       "updatedAt": "2024-01-15T10:30:00.000Z"
     }

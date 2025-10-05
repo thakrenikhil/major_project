@@ -361,6 +361,160 @@ const getCourses = async (req, res) => {
   }
 };
 
+// Mark Attendance (faculty, admin, nodal_officer)
+const markAttendance = async (req, res) => {
+  try {
+    const { course_id, student_id, date, status } = req.body;
+    const marker = req.user;
+
+    if (!course_id || !student_id || !date || !status) {
+      return res.status(400).json({ error: 'course_id, student_id, date, status are required' });
+    }
+
+    if (!['nodal_officer', 'admin', 'faculty'].includes(marker.role)) {
+      return res.status(403).json({ error: 'Insufficient permissions to mark attendance' });
+    }
+
+    const course = await Course.findById(course_id).populate('program_id');
+    if (!course) return res.status(404).json({ error: 'Course not found' });
+
+    // Node ownership check
+    if (!course.program_id.node_id.equals(marker.node_id._id)) {
+      return res.status(403).json({ error: 'Course not in your node' });
+    }
+
+    // Faculty must be assigned to the course
+    if (marker.role === 'faculty') {
+      const isAssigned = await FacultyAssignment.findOne({ course_id, faculty_id: marker._id });
+      if (!isAssigned) {
+        return res.status(403).json({ error: 'You are not assigned to this course' });
+      }
+    }
+
+    // Validate student and node
+    const student = await User.findById(student_id);
+    if (!student || student.role !== 'student' || !student.node_id.equals(marker.node_id._id)) {
+      return res.status(400).json({ error: 'Invalid student or not in your node' });
+    }
+
+    // Ensure student is enrolled in the course
+    const enrollment = await Enrollment.findOne({ course_id, student_id });
+    if (!enrollment) {
+      return res.status(400).json({ error: 'Student is not enrolled in this course' });
+    }
+
+    const attDate = new Date(date);
+
+    // Upsert attendance (unique index on course_id, student_id, date)
+    const attendance = await Attendance.findOneAndUpdate(
+      { course_id, student_id, date: attDate },
+      { $set: { status, marked_by: marker._id } },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+
+    res.status(201).json({ message: 'Attendance recorded', attendance });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get or compute Progress (student can view own; others limited by node)
+const getProgress = async (req, res) => {
+  try {
+    const requester = req.user;
+    const { student_id, course_id } = req.query;
+
+    if (requester.role === 'student') {
+      if (student_id && student_id !== String(requester._id)) {
+        return res.status(403).json({ error: 'Students can only view their own progress' });
+      }
+    } else {
+      if (!student_id) return res.status(400).json({ error: 'student_id is required' });
+      const student = await User.findById(student_id);
+      if (!student || !student.node_id.equals(requester.node_id._id)) {
+        return res.status(403).json({ error: 'Student not in your node' });
+      }
+    }
+
+    const targetStudentId = requester.role === 'student' ? requester._id : student_id;
+
+    // If a course_id is specified, compute/update one, else return all per courses
+    const computeForCourse = async (cid) => {
+      // Attendance percentage
+      const records = await Attendance.find({ course_id: cid, student_id: targetStudentId });
+      const total = records.length;
+      const present = records.filter(r => r.status === 'present').length;
+      const attendancePct = total === 0 ? 0 : (present / total) * 100;
+
+      // Credits earned (sum)
+      const credits = await Credit.find({ course_id: cid, student_id: targetStudentId });
+      const creditsSum = credits.reduce((sum, c) => sum + parseFloat(c.credits_earned.toString()), 0);
+
+      // Upsert progress
+      const progress = await Progress.findOneAndUpdate(
+        { student_id: targetStudentId, course_id: cid },
+        { $set: { attendance_pct: attendancePct, credits_earned: creditsSum } },
+        { new: true, upsert: true, setDefaultsOnInsert: true }
+      );
+      return progress;
+    };
+
+    if (course_id) {
+      const progress = await computeForCourse(course_id);
+      return res.json({ progress });
+    }
+
+    // Find all courses student is enrolled in (limit to same node implicitly by enrollments)
+    const enrollments = await Enrollment.find({ student_id: targetStudentId });
+    const progresses = [];
+    for (const e of enrollments) {
+      progresses.push(await computeForCourse(e.course_id));
+    }
+    res.json({ progress: progresses });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Generate Certificate (admin, nodal_officer)
+const generateCertificate = async (req, res) => {
+  try {
+    const issuer = req.user;
+    const { course_id, student_id, certificate_url } = req.body;
+
+    if (!['nodal_officer', 'admin'].includes(issuer.role)) {
+      return res.status(403).json({ error: 'Insufficient permissions to generate certificates' });
+    }
+
+    if (!course_id || !student_id || !certificate_url) {
+      return res.status(400).json({ error: 'course_id, student_id, certificate_url are required' });
+    }
+
+    const course = await Course.findById(course_id).populate('program_id');
+    if (!course) return res.status(404).json({ error: 'Course not found' });
+    if (!course.program_id.node_id.equals(issuer.node_id._id)) {
+      return res.status(403).json({ error: 'Course not in your node' });
+    }
+
+    const student = await User.findById(student_id);
+    if (!student || !student.node_id.equals(issuer.node_id._id)) {
+      return res.status(403).json({ error: 'Student not in your node' });
+    }
+
+    const enrollment = await Enrollment.findOne({ course_id, student_id });
+    if (!enrollment) {
+      return res.status(400).json({ error: 'Student is not enrolled in this course' });
+    }
+
+    const cert = new Certificate({ course_id, student_id, issued_date: new Date(), certificate_url });
+    await cert.save();
+
+    res.status(201).json({ message: 'Certificate issued', certificate: cert });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   login,
   createUser,
@@ -370,5 +524,8 @@ module.exports = {
   createCourse,
   enrollStudent,
   getPrograms,
-  getCourses
+  getCourses,
+  markAttendance,
+  getProgress,
+  generateCertificate
 };
