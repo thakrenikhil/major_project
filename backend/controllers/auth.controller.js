@@ -1,19 +1,19 @@
-const User = require('../models/user.model');
-const Node = require('../models/node.model');
-const Program = require('../models/program.model');
-const Course = require('../models/course.model');
-const NodeAssignment = require('../models/nodeAssignment.model');
-const FacultyAssignment = require('../models/facultyAssignment.model');
-const Enrollment = require('../models/enrollment.model');
-const Attendance = require('../models/attendance.model');
-const Credit = require('../models/credit.model');
-const Certificate = require('../models/certificate.model');
-const Progress = require('../models/progress.model');
-const jwt = require('jsonwebtoken');
+const User = require("../models/user.model");
+const Node = require("../models/node.model");
+const Program = require("../models/program.model");
+const Course = require("../models/course.model");
+const NodeAssignment = require("../models/nodeAssignment.model");
+const FacultyAssignment = require("../models/facultyAssignment.model");
+const Enrollment = require("../models/enrollment.model");
+const Attendance = require("../models/attendance.model");
+const Credit = require("../models/credit.model");
+const Certificate = require("../models/certificate.model");
+const Progress = require("../models/progress.model");
+const jwt = require("jsonwebtoken");
 
 // Generate JWT token
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '24h' });
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "24h" });
 };
 
 // Login
@@ -23,39 +23,39 @@ const login = async (req, res) => {
 
     // Validate input
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
     // Find user
-    const user = await User.findOne({ email }).populate('node_id');
+    const user = await User.findOne({ email }).populate("node_id");
     if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
     // Check if account is active
     if (!user.isActive) {
-      return res.status(401).json({ error: 'Account is deactivated' });
+      return res.status(401).json({ error: "Account is deactivated" });
     }
 
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
     // Generate token
     const token = generateToken(user._id);
 
     res.json({
-      message: 'Login successful',
+      message: "Login successful",
       token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-        node: user.node_id
-      }
+        node: user.node_id,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -70,28 +70,37 @@ const createUser = async (req, res) => {
 
     // Validate input
     if (!name || !email || !password || !role) {
-      return res.status(400).json({ error: 'All fields are required' });
+      return res.status(400).json({ error: "All fields are required" });
     }
 
     // Role hierarchy validation
-    if (creator.role === 'nodal_officer') {
+    if (creator.role === "nodal_officer") {
       // Nodal officer can create admins, faculty, students
-      if (!['admin', 'faculty', 'student'].includes(role)) {
-        return res.status(403).json({ error: 'Nodal officer can only create admin, faculty, or student accounts' });
+      if (!["admin", "faculty", "student"].includes(role)) {
+        return res
+          .status(403)
+          .json({
+            error:
+              "Nodal officer can only create admin, faculty, or student accounts",
+          });
       }
-    } else if (creator.role === 'admin') {
+    } else if (creator.role === "admin") {
       // Admin can create faculty and students
-      if (!['faculty', 'student'].includes(role)) {
-        return res.status(403).json({ error: 'Admin can only create faculty or student accounts' });
+      if (!["faculty", "student"].includes(role)) {
+        return res
+          .status(403)
+          .json({ error: "Admin can only create faculty or student accounts" });
       }
     } else {
-      return res.status(403).json({ error: 'Insufficient permissions to create users' });
+      return res
+        .status(403)
+        .json({ error: "Insufficient permissions to create users" });
     }
 
     // Check if email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ error: 'Email already registered' });
+      return res.status(400).json({ error: "Email already registered" });
     }
 
     // Use creator's node_id if not provided
@@ -100,7 +109,7 @@ const createUser = async (req, res) => {
     // Validate node exists
     const node = await Node.findById(userNodeId);
     if (!node) {
-      return res.status(400).json({ error: 'Invalid node ID' });
+      return res.status(400).json({ error: "Invalid node ID" });
     }
 
     // Create user
@@ -110,20 +119,20 @@ const createUser = async (req, res) => {
       password_hash: password, // Will be hashed by pre-save middleware
       role,
       node_id: userNodeId,
-      created_by: creator._id
+      created_by: creator._id,
     });
 
     await user.save();
 
     res.status(201).json({
-      message: 'User created successfully',
+      message: "User created successfully",
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-        node_id: user.node_id
-      }
+        node_id: user.node_id,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -134,8 +143,8 @@ const createUser = async (req, res) => {
 const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
-      .populate('node_id')
-      .populate('created_by', 'name email role');
+      .populate("node_id")
+      .populate("created_by", "name email role");
 
     res.json({
       user: {
@@ -145,8 +154,8 @@ const getProfile = async (req, res) => {
         role: user.role,
         node: user.node_id,
         created_by: user.created_by,
-        createdAt: user.createdAt
-      }
+        createdAt: user.createdAt,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -160,22 +169,22 @@ const getUsers = async (req, res) => {
     let query = {};
 
     // Filter based on role hierarchy
-    if (currentUser.role === 'nodal_officer') {
+    if (currentUser.role === "nodal_officer") {
       // Can see all users in their node
       query = { node_id: currentUser.node_id._id };
-    } else if (currentUser.role === 'admin') {
+    } else if (currentUser.role === "admin") {
       // Can see faculty and students they created or in their node
       query = {
         node_id: currentUser.node_id._id,
-        role: { $in: ['faculty', 'student'] }
+        role: { $in: ["faculty", "student"] },
       };
     } else {
-      return res.status(403).json({ error: 'Insufficient permissions' });
+      return res.status(403).json({ error: "Insufficient permissions" });
     }
 
     const users = await User.find(query)
-      .populate('node_id', 'node_name state_name')
-      .populate('created_by', 'name role')
+      .populate("node_id", "node_name state_name")
+      .populate("created_by", "name role")
       .sort({ createdAt: -1 });
 
     res.json({ users });
@@ -191,28 +200,30 @@ const createProgram = async (req, res) => {
     const creator = req.user;
 
     if (!program_name) {
-      return res.status(400).json({ error: 'Program name is required' });
+      return res.status(400).json({ error: "Program name is required" });
     }
 
-    if (!['nodal_officer', 'admin'].includes(creator.role)) {
-      return res.status(403).json({ error: 'Insufficient permissions to create programs' });
+    if (!["nodal_officer", "admin"].includes(creator.role)) {
+      return res
+        .status(403)
+        .json({ error: "Insufficient permissions to create programs" });
     }
 
     const program = new Program({
       node_id: creator.node_id._id,
       program_name,
-      created_by: creator._id
+      created_by: creator._id,
     });
 
     await program.save();
 
     res.status(201).json({
-      message: 'Program created successfully',
+      message: "Program created successfully",
       program: {
         id: program._id,
         program_name: program.program_name,
-        node_id: program.node_id
-      }
+        node_id: program.node_id,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -222,21 +233,28 @@ const createProgram = async (req, res) => {
 // Create Course (nodal officers and admins)
 const createCourse = async (req, res) => {
   try {
-    const { program_id, course_name, description, start_date, end_date } = req.body;
+    const { program_id, course_name, description, start_date, end_date } =
+      req.body;
     const creator = req.user;
 
     if (!program_id || !course_name || !start_date || !end_date) {
-      return res.status(400).json({ error: 'All required fields must be provided' });
+      return res
+        .status(400)
+        .json({ error: "All required fields must be provided" });
     }
 
-    if (!['nodal_officer', 'admin'].includes(creator.role)) {
-      return res.status(403).json({ error: 'Insufficient permissions to create courses' });
+    if (!["nodal_officer", "admin"].includes(creator.role)) {
+      return res
+        .status(403)
+        .json({ error: "Insufficient permissions to create courses" });
     }
 
     // Verify program exists and belongs to same node
     const program = await Program.findById(program_id);
     if (!program || !program.node_id.equals(creator.node_id._id)) {
-      return res.status(400).json({ error: 'Invalid program or program not in your node' });
+      return res
+        .status(400)
+        .json({ error: "Invalid program or program not in your node" });
     }
 
     const course = new Course({
@@ -245,21 +263,21 @@ const createCourse = async (req, res) => {
       description,
       start_date: new Date(start_date),
       end_date: new Date(end_date),
-      created_by: creator._id
+      created_by: creator._id,
     });
 
     await course.save();
 
     res.status(201).json({
-      message: 'Course created successfully',
+      message: "Course created successfully",
       course: {
         id: course._id,
         course_name: course.course_name,
         program_id: course.program_id,
         start_date: course.start_date,
         end_date: course.end_date,
-        status: course.status
-      }
+        status: course.status,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -273,45 +291,62 @@ const enrollStudent = async (req, res) => {
     const enroller = req.user;
 
     if (!course_id || !student_id) {
-      return res.status(400).json({ error: 'Course ID and Student ID are required' });
+      return res
+        .status(400)
+        .json({ error: "Course ID and Student ID are required" });
     }
 
-    if (!['nodal_officer', 'admin'].includes(enroller.role)) {
-      return res.status(403).json({ error: 'Insufficient permissions to enroll students' });
+    if (!["nodal_officer", "admin"].includes(enroller.role)) {
+      return res
+        .status(403)
+        .json({ error: "Insufficient permissions to enroll students" });
     }
 
     // Verify course exists and belongs to same node
-    const course = await Course.findById(course_id).populate('program_id');
+    const course = await Course.findById(course_id).populate("program_id");
     if (!course || !course.program_id.node_id.equals(enroller.node_id._id)) {
-      return res.status(400).json({ error: 'Invalid course or course not in your node' });
+      return res
+        .status(400)
+        .json({ error: "Invalid course or course not in your node" });
     }
 
     // Verify student exists and belongs to same node
     const student = await User.findById(student_id);
-    if (!student || !student.node_id.equals(enroller.node_id._id) || student.role !== 'student') {
-      return res.status(400).json({ error: 'Invalid student or student not in your node' });
+    if (
+      !student ||
+      !student.node_id.equals(enroller.node_id._id) ||
+      student.role !== "student"
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Invalid student or student not in your node" });
     }
 
     // Check if already enrolled
-    const existingEnrollment = await Enrollment.findOne({ course_id, student_id });
+    const existingEnrollment = await Enrollment.findOne({
+      course_id,
+      student_id,
+    });
     if (existingEnrollment) {
-      return res.status(400).json({ error: 'Student is already enrolled in this course' });
+      return res
+        .status(400)
+        .json({ error: "Student is already enrolled in this course" });
     }
 
     const enrollment = new Enrollment({
       course_id,
-      student_id
+      student_id,
     });
 
     await enrollment.save();
 
     res.status(201).json({
-      message: 'Student enrolled successfully',
+      message: "Student enrolled successfully",
       enrollment: {
         id: enrollment._id,
         course_id: enrollment.course_id,
-        student_id: enrollment.student_id
-      }
+        student_id: enrollment.student_id,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -325,7 +360,7 @@ const getPrograms = async (req, res) => {
     let query = { node_id: currentUser.node_id._id };
 
     const programs = await Program.find(query)
-      .populate('created_by', 'name email role')
+      .populate("created_by", "name email role")
       .sort({ createdAt: -1 });
 
     res.json({ programs });
@@ -346,12 +381,12 @@ const getCourses = async (req, res) => {
     }
 
     const courses = await Course.find(query)
-      .populate('program_id', 'program_name node_id')
-      .populate('created_by', 'name email role')
+      .populate("program_id", "program_name node_id")
+      .populate("created_by", "name email role")
       .sort({ createdAt: -1 });
 
     // Filter courses that belong to user's node
-    const filteredCourses = courses.filter(course => 
+    const filteredCourses = courses.filter((course) =>
       course.program_id.node_id.equals(currentUser.node_id._id)
     );
 
@@ -370,5 +405,5 @@ module.exports = {
   createCourse,
   enrollStudent,
   getPrograms,
-  getCourses
+  getCourses,
 };

@@ -1,7 +1,7 @@
 {
   "name": "major",
   "version": "1.0.0",
-  "description": "",
+  "description": "This project provides APIs for managing **nodes, users, programs, courses, enrollments, and more**.  \r It is designed for nodal officers, admins, faculty, and students to streamline education workflows.",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
