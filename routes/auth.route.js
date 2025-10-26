@@ -4,10 +4,7 @@ const {
   createUser, 
   getProfile, 
   getUsers,
-  createProgram,
-  createCourse,
   enrollStudent,
-  getPrograms,
   getCourses,
   markAttendance,
   getProgress,
@@ -25,12 +22,7 @@ router.get('/profile', auth, getProfile);
 router.post('/create-user', auth, authorize('nodal_officer', 'admin'), createUser);
 router.get('/users', auth, authorize('nodal_officer', 'admin'), getUsers);
 
-// Program routes
-router.post('/programs', auth, authorize('nodal_officer', 'admin'), createProgram);
-router.get('/programs', auth, getPrograms);
-
 // Course routes
-router.post('/courses', auth, authorize('nodal_officer', 'admin'), createCourse);
 router.get('/courses', auth, getCourses);
 
 // Enrollment routes

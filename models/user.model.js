@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['nodal_officer', 'admin', 'faculty', 'student'],
+    enum: ['nodal_officer', 'admin', 'faculty', 'student', 'gsp_authority'],
     required: [true, 'Role is required']
   },
   isActive: {
@@ -36,6 +36,41 @@ const userSchema = new mongoose.Schema({
   created_by: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
+  },
+  // Student specific fields
+  parents_name: {
+    type: String,
+    trim: true
+  },
+  mobile: {
+    type: String,
+    trim: true
+  },
+  address: {
+    type: String,
+    trim: true
+  },
+  govt_id: {
+    type: String,
+    trim: true
+  },
+  govt_id_type: {
+    type: String,
+    enum: ['Aadhaar', 'PAN', 'Voter ID', 'Driving License', 'Passport'],
+    trim: true
+  },
+  payment_status: {
+    type: String,
+    enum: ['pending', 'paid', 'refunded'],
+    default: 'pending'
+  },
+  payment_amount: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  payment_date: {
+    type: Date
   }
 }, {
   timestamps: true

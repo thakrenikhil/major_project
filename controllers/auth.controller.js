@@ -1,6 +1,5 @@
 const User = require('../models/user.model');
 const Node = require('../models/node.model');
-const Program = require('../models/program.model');
 const Course = require('../models/course.model');
 const NodeAssignment = require('../models/nodeAssignment.model');
 const FacultyAssignment = require('../models/facultyAssignment.model');
@@ -184,87 +183,7 @@ const getUsers = async (req, res) => {
   }
 };
 
-// Create Program (nodal officers and admins)
-const createProgram = async (req, res) => {
-  try {
-    const { program_name } = req.body;
-    const creator = req.user;
 
-    if (!program_name) {
-      return res.status(400).json({ error: 'Program name is required' });
-    }
-
-    if (!['nodal_officer', 'admin'].includes(creator.role)) {
-      return res.status(403).json({ error: 'Insufficient permissions to create programs' });
-    }
-
-    const program = new Program({
-      node_id: creator.node_id._id,
-      program_name,
-      created_by: creator._id
-    });
-
-    await program.save();
-
-    res.status(201).json({
-      message: 'Program created successfully',
-      program: {
-        id: program._id,
-        program_name: program.program_name,
-        node_id: program.node_id
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// Create Course (nodal officers and admins)
-const createCourse = async (req, res) => {
-  try {
-    const { program_id, course_name, description, start_date, end_date } = req.body;
-    const creator = req.user;
-
-    if (!program_id || !course_name || !start_date || !end_date) {
-      return res.status(400).json({ error: 'All required fields must be provided' });
-    }
-
-    if (!['nodal_officer', 'admin'].includes(creator.role)) {
-      return res.status(403).json({ error: 'Insufficient permissions to create courses' });
-    }
-
-    // Verify program exists and belongs to same node
-    const program = await Program.findById(program_id);
-    if (!program || !program.node_id.equals(creator.node_id._id)) {
-      return res.status(400).json({ error: 'Invalid program or program not in your node' });
-    }
-
-    const course = new Course({
-      program_id,
-      course_name,
-      description,
-      start_date: new Date(start_date),
-      end_date: new Date(end_date),
-      created_by: creator._id
-    });
-
-    await course.save();
-
-    res.status(201).json({
-      message: 'Course created successfully',
-      course: {
-        id: course._id,
-        course_name: course.course_name,
-        program_id: course.program_id,
-        start_date: course.start_date,
-        end_date: course.end_date,
-        status: course.status
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 // Enroll Student in Course
 const enrollStudent = async (req, res) => {
@@ -318,44 +237,24 @@ const enrollStudent = async (req, res) => {
   }
 };
 
-// Get Programs
-const getPrograms = async (req, res) => {
-  try {
-    const currentUser = req.user;
-    let query = { node_id: currentUser.node_id._id };
-
-    const programs = await Program.find(query)
-      .populate('created_by', 'name email role')
-      .sort({ createdAt: -1 });
-
-    res.json({ programs });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 // Get Courses
 const getCourses = async (req, res) => {
   try {
     const currentUser = req.user;
-    const { program_id } = req.query;
+    const { institution_id } = req.query;
 
     let query = {};
-    if (program_id) {
-      query.program_id = program_id;
+    if (institution_id) {
+      query.institution_id = institution_id;
     }
 
     const courses = await Course.find(query)
-      .populate('program_id', 'program_name node_id')
+      .populate('institution_id', 'name')
       .populate('created_by', 'name email role')
       .sort({ createdAt: -1 });
 
-    // Filter courses that belong to user's node
-    const filteredCourses = courses.filter(course => 
-      course.program_id.node_id.equals(currentUser.node_id._id)
-    );
-
-    res.json({ courses: filteredCourses });
+    res.json({ courses });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -520,10 +419,7 @@ module.exports = {
   createUser,
   getProfile,
   getUsers,
-  createProgram,
-  createCourse,
   enrollStudent,
-  getPrograms,
   getCourses,
   markAttendance,
   getProgress,

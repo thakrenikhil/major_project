@@ -4,6 +4,13 @@ const cors = require('cors');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth.route');
+const institutionRoutes = require('./routes/institution.route');
+const feedbackRoutes = require('./routes/feedback.route');
+const certificateRoutes = require('./routes/certificate.route');
+const courseRoutes = require('./routes/course.route');
+const studentRoutes = require('./routes/student.route');
+const assignmentRoutes = require('./routes/assignment.route');
+const paymentRoutes = require('./routes/payment.route');
 
 const app = express();
 
@@ -22,6 +29,13 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/education
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/institutions', institutionRoutes);
+app.use('/api/feedback', feedbackRoutes);
+app.use('/api/certificates', certificateRoutes);
+app.use('/api/courses', courseRoutes);
+app.use('/api/students', studentRoutes);
+app.use('/api/assignments', assignmentRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
