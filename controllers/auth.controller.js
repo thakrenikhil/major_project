@@ -200,10 +200,10 @@ const enrollStudent = async (req, res) => {
     }
 
     // Verify course exists and belongs to same node
-    const course = await Course.findById(course_id).populate('program_id');
-    if (!course || !course.program_id.node_id.equals(enroller.node_id._id)) {
-      return res.status(400).json({ error: 'Invalid course or course not in your node' });
-    }
+    // const course = await Course.findById(course_id).populate('program_id');
+    // if (!course || !course.program_id.node_id.equals(enroller.node_id._id)) {
+    //   return res.status(400).json({ error: 'Invalid course or course not in your node' });
+    // }
 
     // Verify student exists and belongs to same node
     const student = await User.findById(student_id);
@@ -274,13 +274,13 @@ const markAttendance = async (req, res) => {
       return res.status(403).json({ error: 'Insufficient permissions to mark attendance' });
     }
 
-    const course = await Course.findById(course_id).populate('program_id');
-    if (!course) return res.status(404).json({ error: 'Course not found' });
+    // const course = await Course.findById(course_id).populate('program_id');
+    // if (!course) return res.status(404).json({ error: 'Course not found' });
 
-    // Node ownership check
-    if (!course.program_id.node_id.equals(marker.node_id._id)) {
-      return res.status(403).json({ error: 'Course not in your node' });
-    }
+    // // Node ownership check
+    // if (!course.program_id.node_id.equals(marker.node_id._id)) {
+    //   return res.status(403).json({ error: 'Course not in your node' });
+    // }
 
     // Faculty must be assigned to the course
     if (marker.role === 'faculty') {
@@ -389,11 +389,11 @@ const generateCertificate = async (req, res) => {
       return res.status(400).json({ error: 'course_id, student_id, certificate_url are required' });
     }
 
-    const course = await Course.findById(course_id).populate('program_id');
-    if (!course) return res.status(404).json({ error: 'Course not found' });
-    if (!course.program_id.node_id.equals(issuer.node_id._id)) {
-      return res.status(403).json({ error: 'Course not in your node' });
-    }
+    // const course = await Course.findById(course_id).populate('program_id');
+    // if (!course) return res.status(404).json({ error: 'Course not found' });
+    // if (!course.program_id.node_id.equals(issuer.node_id._id)) {
+    //   return res.status(403).json({ error: 'Course not in your node' });
+    // }
 
     const student = await User.findById(student_id);
     if (!student || !student.node_id.equals(issuer.node_id._id)) {

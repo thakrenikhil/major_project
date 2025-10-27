@@ -13,7 +13,7 @@ const router = express.Router();
 
 // Protected routes
 router.post('/create', auth, authorize('admin'), createCourse);
-router.post('/approve', auth, authorize('gsp_authority'), approveCourse);
+router.post('/approve', auth, authorize('gsp_authority','nodal_officer'), approveCourse);
 router.post('/start', auth, authorize('nodal_officer'), startCourse);
 router.post('/complete', auth, authorize('nodal_officer'), completeCourse);
 router.get('/', auth, getCourses);

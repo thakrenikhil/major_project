@@ -70,7 +70,7 @@ const createCourse = async (req, res) => {
     ) {
       return res.status(400).json({ error: "Invalid nodal officer" });
     }
-
+    
     const course = new Course({
       institution_id,
       course_name,
@@ -107,7 +107,7 @@ const approveCourse = async (req, res) => {
     const { course_id, action } = req.body; // action: 'approve' or 'reject'
     const approver = req.user;
 
-    if (approver.role !== "gsp_authority") {
+    if (approver.role !== "gsp_authority" && approver.role !== "nodal_officer") {
       return res
         .status(403)
         .json({ error: "Only GSP Authority can approve courses" });
@@ -266,7 +266,7 @@ const getCourses = async (req, res) => {
     }
 
     const courses = await Course.find(query)
-      .populate("program_id", "program_name")
+      // .populate("program_id", "program_name")
       .populate("institution_id", "name")
       .populate("nodal_officer", "name email")
       .populate("approved_by", "name email")
@@ -286,7 +286,7 @@ const getCourseById = async (req, res) => {
     const user = req.user;
 
     const course = await Course.findById(id)
-      .populate("program_id", "program_name")
+      // .populate("program_id", "program_name")
       .populate("institution_id", "name")
       .populate("nodal_officer", "name email")
       .populate("approved_by", "name email")

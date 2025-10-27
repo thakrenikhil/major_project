@@ -153,7 +153,7 @@ const submitAssignment = async (req, res) => {
       submission_text,
       submission_files: submission_files || [],
       submission_date: submissionDate,
-      is_late,
+      is_late: isLate,
       late_days: lateDays
     });
 
