@@ -1,18 +1,18 @@
-const User = require('../models/user.model');
-const Node = require('../models/node.model');
-const Course = require('../models/course.model');
-const NodeAssignment = require('../models/nodeAssignment.model');
-const FacultyAssignment = require('../models/facultyAssignment.model');
-const Enrollment = require('../models/enrollment.model');
-const Attendance = require('../models/attendance.model');
-const Credit = require('../models/credit.model');
-const Certificate = require('../models/certificate.model');
-const Progress = require('../models/progress.model');
-const jwt = require('jsonwebtoken');
+const User = require("../models/user.model");
+const Node = require("../models/node.model");
+const Course = require("../models/course.model");
+const NodeAssignment = require("../models/nodeAssignment.model");
+const FacultyAssignment = require("../models/facultyAssignment.model");
+const Enrollment = require("../models/enrollment.model");
+const Attendance = require("../models/attendance.model");
+const Credit = require("../models/credit.model");
+const Certificate = require("../models/certificate.model");
+const Progress = require("../models/progress.model");
+const jwt = require("jsonwebtoken");
 
 // Generate JWT token
 const generateToken = (userId) => {
-  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: '24h' });
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "24h" });
 };
 
 // Login
@@ -22,39 +22,39 @@ const login = async (req, res) => {
 
     // Validate input
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
     // Find user
-    const user = await User.findOne({ email }).populate('node_id');
+    const user = await User.findOne({ email }).populate("node_id");
     if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
     // Check if account is active
     if (!user.isActive) {
-      return res.status(401).json({ error: 'Account is deactivated' });
+      return res.status(401).json({ error: "Account is deactivated" });
     }
 
     // Check password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
     // Generate token
     const token = generateToken(user._id);
 
     res.json({
-      message: 'Login successful',
+      message: "Login successful",
       token,
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-        node: user.node_id
-      }
+        node: user.node_id,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -69,28 +69,37 @@ const createUser = async (req, res) => {
 
     // Validate input
     if (!name || !email || !password || !role) {
-      return res.status(400).json({ error: 'All fields are required' });
+      return res.status(400).json({ error: "All fields are required" });
     }
 
     // Role hierarchy validation
-    if (creator.role === 'nodal_officer') {
+    if (creator.role === "nodal_officer") {
       // Nodal officer can create admins, faculty, students
-      if (!['admin', 'faculty', 'student'].includes(role)) {
-        return res.status(403).json({ error: 'Nodal officer can only create admin, faculty, or student accounts' });
+      if (!["admin", "faculty", "student"].includes(role)) {
+        return res
+          .status(403)
+          .json({
+            error:
+              "Nodal officer can only create admin, faculty, or student accounts",
+          });
       }
-    } else if (creator.role === 'admin') {
+    } else if (creator.role === "admin") {
       // Admin can create faculty and students
-      if (!['faculty', 'student'].includes(role)) {
-        return res.status(403).json({ error: 'Admin can only create faculty or student accounts' });
+      if (!["faculty", "student"].includes(role)) {
+        return res
+          .status(403)
+          .json({ error: "Admin can only create faculty or student accounts" });
       }
     } else {
-      return res.status(403).json({ error: 'Insufficient permissions to create users' });
+      return res
+        .status(403)
+        .json({ error: "Insufficient permissions to create users" });
     }
 
     // Check if email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ error: 'Email already registered' });
+      return res.status(400).json({ error: "Email already registered" });
     }
 
     // Use creator's node_id if not provided
@@ -99,7 +108,7 @@ const createUser = async (req, res) => {
     // Validate node exists
     const node = await Node.findById(userNodeId);
     if (!node) {
-      return res.status(400).json({ error: 'Invalid node ID' });
+      return res.status(400).json({ error: "Invalid node ID" });
     }
 
     // Create user
@@ -109,20 +118,20 @@ const createUser = async (req, res) => {
       password_hash: password, // Will be hashed by pre-save middleware
       role,
       node_id: userNodeId,
-      created_by: creator._id
+      created_by: creator._id,
     });
 
     await user.save();
 
     res.status(201).json({
-      message: 'User created successfully',
+      message: "User created successfully",
       user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-        node_id: user.node_id
-      }
+        node_id: user.node_id,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -133,8 +142,8 @@ const createUser = async (req, res) => {
 const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
-      .populate('node_id')
-      .populate('created_by', 'name email role');
+      .populate("node_id")
+      .populate("created_by", "name email role");
 
     res.json({
       user: {
@@ -144,8 +153,8 @@ const getProfile = async (req, res) => {
         role: user.role,
         node: user.node_id,
         created_by: user.created_by,
-        createdAt: user.createdAt
-      }
+        createdAt: user.createdAt,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -159,22 +168,22 @@ const getUsers = async (req, res) => {
     let query = {};
 
     // Filter based on role hierarchy
-    if (currentUser.role === 'nodal_officer') {
+    if (currentUser.role === "nodal_officer") {
       // Can see all users in their node
       query = { node_id: currentUser.node_id._id };
-    } else if (currentUser.role === 'admin') {
+    } else if (currentUser.role === "admin") {
       // Can see faculty and students they created or in their node
       query = {
         node_id: currentUser.node_id._id,
-        role: { $in: ['faculty', 'student'] }
+        role: { $in: ["faculty", "student"] },
       };
     } else {
-      return res.status(403).json({ error: 'Insufficient permissions' });
+      return res.status(403).json({ error: "Insufficient permissions" });
     }
 
     const users = await User.find(query)
-      .populate('node_id', 'node_name state_name')
-      .populate('created_by', 'name role')
+      .populate("node_id", "node_name state_name")
+      .populate("created_by", "name role")
       .sort({ createdAt: -1 });
 
     res.json({ users });
@@ -183,8 +192,6 @@ const getUsers = async (req, res) => {
   }
 };
 
-
-
 // Enroll Student in Course
 const enrollStudent = async (req, res) => {
   try {
@@ -192,11 +199,15 @@ const enrollStudent = async (req, res) => {
     const enroller = req.user;
 
     if (!course_id || !student_id) {
-      return res.status(400).json({ error: 'Course ID and Student ID are required' });
+      return res
+        .status(400)
+        .json({ error: "Course ID and Student ID are required" });
     }
 
-    if (!['nodal_officer', 'admin'].includes(enroller.role)) {
-      return res.status(403).json({ error: 'Insufficient permissions to enroll students' });
+    if (!["nodal_officer", "admin"].includes(enroller.role)) {
+      return res
+        .status(403)
+        .json({ error: "Insufficient permissions to enroll students" });
     }
 
     // Verify course exists and belongs to same node
@@ -207,36 +218,46 @@ const enrollStudent = async (req, res) => {
 
     // Verify student exists and belongs to same node
     const student = await User.findById(student_id);
-    if (!student || !student.node_id.equals(enroller.node_id._id) || student.role !== 'student') {
-      return res.status(400).json({ error: 'Invalid student or student not in your node' });
+    if (
+      !student ||
+      !student.node_id.equals(enroller.node_id._id) ||
+      student.role !== "student"
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Invalid student or student not in your node" });
     }
 
     // Check if already enrolled
-    const existingEnrollment = await Enrollment.findOne({ course_id, student_id });
+    const existingEnrollment = await Enrollment.findOne({
+      course_id,
+      student_id,
+    });
     if (existingEnrollment) {
-      return res.status(400).json({ error: 'Student is already enrolled in this course' });
+      return res
+        .status(400)
+        .json({ error: "Student is already enrolled in this course" });
     }
 
     const enrollment = new Enrollment({
       course_id,
-      student_id
+      student_id,
     });
 
     await enrollment.save();
 
     res.status(201).json({
-      message: 'Student enrolled successfully',
+      message: "Student enrolled successfully",
       enrollment: {
         id: enrollment._id,
         course_id: enrollment.course_id,
-        student_id: enrollment.student_id
-      }
+        student_id: enrollment.student_id,
+      },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 // Get Courses
 const getCourses = async (req, res) => {
@@ -250,8 +271,8 @@ const getCourses = async (req, res) => {
     }
 
     const courses = await Course.find(query)
-      .populate('institution_id', 'name')
-      .populate('created_by', 'name email role')
+      .populate("institution_id", "name")
+      .populate("created_by", "name email role")
       .sort({ createdAt: -1 });
 
     res.json({ courses });
@@ -267,11 +288,15 @@ const markAttendance = async (req, res) => {
     const marker = req.user;
 
     if (!course_id || !student_id || !date || !status) {
-      return res.status(400).json({ error: 'course_id, student_id, date, status are required' });
+      return res
+        .status(400)
+        .json({ error: "course_id, student_id, date, status are required" });
     }
 
-    if (!['nodal_officer', 'admin', 'faculty'].includes(marker.role)) {
-      return res.status(403).json({ error: 'Insufficient permissions to mark attendance' });
+    if (!["nodal_officer", "admin", "faculty"].includes(marker.role)) {
+      return res
+        .status(403)
+        .json({ error: "Insufficient permissions to mark attendance" });
     }
 
     // const course = await Course.findById(course_id).populate('program_id');
@@ -283,23 +308,36 @@ const markAttendance = async (req, res) => {
     // }
 
     // Faculty must be assigned to the course
-    if (marker.role === 'faculty') {
-      const isAssigned = await FacultyAssignment.findOne({ course_id, faculty_id: marker._id });
+    if (marker.role === "faculty") {
+      const isAssigned = await FacultyAssignment.findOne({
+        course_id,
+        faculty_id: marker._id,
+      });
       if (!isAssigned) {
-        return res.status(403).json({ error: 'You are not assigned to this course' });
+        return res
+          .status(403)
+          .json({ error: "You are not assigned to this course" });
       }
     }
 
     // Validate student and node
     const student = await User.findById(student_id);
-    if (!student || student.role !== 'student' || !student.node_id.equals(marker.node_id._id)) {
-      return res.status(400).json({ error: 'Invalid student or not in your node' });
+    if (
+      !student ||
+      student.role !== "student" ||
+      !student.node_id.equals(marker.node_id._id)
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Invalid student or not in your node" });
     }
 
     // Ensure student is enrolled in the course
     const enrollment = await Enrollment.findOne({ course_id, student_id });
     if (!enrollment) {
-      return res.status(400).json({ error: 'Student is not enrolled in this course' });
+      return res
+        .status(400)
+        .json({ error: "Student is not enrolled in this course" });
     }
 
     const attDate = new Date(date);
@@ -311,7 +349,7 @@ const markAttendance = async (req, res) => {
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
 
-    res.status(201).json({ message: 'Attendance recorded', attendance });
+    res.status(201).json({ message: "Attendance recorded", attendance });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -323,31 +361,44 @@ const getProgress = async (req, res) => {
     const requester = req.user;
     const { student_id, course_id } = req.query;
 
-    if (requester.role === 'student') {
+    if (requester.role === "student") {
       if (student_id && student_id !== String(requester._id)) {
-        return res.status(403).json({ error: 'Students can only view their own progress' });
+        return res
+          .status(403)
+          .json({ error: "Students can only view their own progress" });
       }
     } else {
-      if (!student_id) return res.status(400).json({ error: 'student_id is required' });
+      if (!student_id)
+        return res.status(400).json({ error: "student_id is required" });
       const student = await User.findById(student_id);
       if (!student || !student.node_id.equals(requester.node_id._id)) {
-        return res.status(403).json({ error: 'Student not in your node' });
+        return res.status(403).json({ error: "Student not in your node" });
       }
     }
 
-    const targetStudentId = requester.role === 'student' ? requester._id : student_id;
+    const targetStudentId =
+      requester.role === "student" ? requester._id : student_id;
 
     // If a course_id is specified, compute/update one, else return all per courses
     const computeForCourse = async (cid) => {
       // Attendance percentage
-      const records = await Attendance.find({ course_id: cid, student_id: targetStudentId });
+      const records = await Attendance.find({
+        course_id: cid,
+        student_id: targetStudentId,
+      });
       const total = records.length;
-      const present = records.filter(r => r.status === 'present').length;
+      const present = records.filter((r) => r.status === "present").length;
       const attendancePct = total === 0 ? 0 : (present / total) * 100;
 
       // Credits earned (sum)
-      const credits = await Credit.find({ course_id: cid, student_id: targetStudentId });
-      const creditsSum = credits.reduce((sum, c) => sum + parseFloat(c.credits_earned.toString()), 0);
+      const credits = await Credit.find({
+        course_id: cid,
+        student_id: targetStudentId,
+      });
+      const creditsSum = credits.reduce(
+        (sum, c) => sum + parseFloat(c.credits_earned.toString()),
+        0
+      );
 
       // Upsert progress
       const progress = await Progress.findOneAndUpdate(
@@ -381,12 +432,16 @@ const generateCertificate = async (req, res) => {
     const issuer = req.user;
     const { course_id, student_id, certificate_url } = req.body;
 
-    if (!['nodal_officer', 'admin'].includes(issuer.role)) {
-      return res.status(403).json({ error: 'Insufficient permissions to generate certificates' });
+    if (!["nodal_officer", "admin"].includes(issuer.role)) {
+      return res
+        .status(403)
+        .json({ error: "Insufficient permissions to generate certificates" });
     }
 
     if (!course_id || !student_id || !certificate_url) {
-      return res.status(400).json({ error: 'course_id, student_id, certificate_url are required' });
+      return res
+        .status(400)
+        .json({ error: "course_id, student_id, certificate_url are required" });
     }
 
     // const course = await Course.findById(course_id).populate('program_id');
@@ -397,18 +452,40 @@ const generateCertificate = async (req, res) => {
 
     const student = await User.findById(student_id);
     if (!student || !student.node_id.equals(issuer.node_id._id)) {
-      return res.status(403).json({ error: 'Student not in your node' });
+      return res.status(403).json({ error: "Student not in your node" });
     }
 
     const enrollment = await Enrollment.findOne({ course_id, student_id });
     if (!enrollment) {
-      return res.status(400).json({ error: 'Student is not enrolled in this course' });
+      return res
+        .status(400)
+        .json({ error: "Student is not enrolled in this course" });
     }
 
-    const cert = new Certificate({ course_id, student_id, issued_date: new Date(), certificate_url });
+    const cert = new Certificate({
+      course_id,
+      student_id,
+      issued_date: new Date(),
+      certificate_url,
+    });
     await cert.save();
 
-    res.status(201).json({ message: 'Certificate issued', certificate: cert });
+    res.status(201).json({ message: "Certificate issued", certificate: cert });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Fetch all nodal officers (for assignment)
+const getNodalOfficers = async (req, res) => {
+  try {
+    const nodalOfficers = await User.find({
+      role: "nodal_officer",
+      isActive: true,
+    })
+      .select("-password_hash")
+      .populate("node_id", "node_name state_name");
+    res.json({ nodalOfficers });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -423,5 +500,6 @@ module.exports = {
   getCourses,
   markAttendance,
   getProgress,
-  generateCertificate
+  generateCertificate,
+  getNodalOfficers,
 };

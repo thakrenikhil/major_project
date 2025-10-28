@@ -1,28 +1,28 @@
-const mongoose = require('mongoose');
-const bcryptjs = require('bcryptjs');
-require('dotenv').config();
+const mongoose = require("mongoose");
+const bcryptjs = require("bcryptjs");
+require("dotenv").config();
 
-const Node = require('../models/node.model');
-const User = require('../models/user.model');
-const Course = require('../models/course.model');
-const NodeAssignment = require('../models/nodeAssignment.model');
-const FacultyAssignment = require('../models/facultyAssignment.model');
-const Enrollment = require('../models/enrollment.model');
-const Attendance = require('../models/attendance.model');
-const Credit = require('../models/credit.model');
-const Certificate = require('../models/certificate.model');
-const Progress = require('../models/progress.model');
-const Institution = require('../models/institution.model');
-const Feedback = require('../models/feedback.model');
-const Payment = require('../models/payment.model');
-const Assignment = require('../models/assignment.model');
-const AssignmentSubmission = require('../models/assignmentSubmission.model');
+const Node = require("../models/node.model");
+const User = require("../models/user.model");
+const Course = require("../models/course.model");
+const NodeAssignment = require("../models/nodeAssignment.model");
+const FacultyAssignment = require("../models/facultyAssignment.model");
+const Enrollment = require("../models/enrollment.model");
+const Attendance = require("../models/attendance.model");
+const Credit = require("../models/credit.model");
+const Certificate = require("../models/certificate.model");
+const Progress = require("../models/progress.model");
+const Institution = require("../models/institution.model");
+const Feedback = require("../models/feedback.model");
+const Payment = require("../models/payment.model");
+const Assignment = require("../models/assignment.model");
+const AssignmentSubmission = require("../models/assignmentSubmission.model");
 
 const seedData = async () => {
   try {
     // Connect to MongoDB
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('Connected to MongoDB');
+    console.log("Connected to MongoDB");
 
     // Clear existing data (optional - uncomment if you want to reset)
     await Node.deleteMany({});
@@ -40,52 +40,55 @@ const seedData = async () => {
     await Payment.deleteMany({});
     await Assignment.deleteMany({});
     await AssignmentSubmission.deleteMany({});
-    console.log('Cleared existing data');
+    console.log("Cleared existing data");
 
     // Create sample nodes
     const nodes = await Node.create([
       {
-        node_name: 'Delhi Central Node',
-        state_name: 'Delhi',
-        node_coordinates: '28.6139° N, 77.2090° E'
+        node_name: "Delhi Central Node",
+        state_name: "Delhi",
+        node_coordinates: "28.6139° N, 77.2090° E",
       },
       {
-        node_name: 'Mumbai West Node',
-        state_name: 'Maharashtra',
-        node_coordinates: '19.0760° N, 72.8777° E'
+        node_name: "Mumbai West Node",
+        state_name: "Maharashtra",
+        node_coordinates: "19.0760° N, 72.8777° E",
       },
       {
-        node_name: 'Bangalore Tech Node',
-        state_name: 'Karnataka',
-        node_coordinates: '12.9716° N, 77.5946° E'
-      }
+        node_name: "Bangalore Tech Node",
+        state_name: "Karnataka",
+        node_coordinates: "12.9716° N, 77.5946° E",
+      },
     ]);
 
-    console.log('Created nodes:', nodes.map(n => n.node_name));
+    console.log(
+      "Created nodes:",
+      nodes.map((n) => n.node_name)
+    );
 
     // Create nodal officers for each node
     const nodalOfficers = await User.create([
       {
         node_id: nodes[0]._id,
-        name: 'Dr. Rajesh Kumar',
-        email: 'rajesh.kumar@example.com',
-        password_hash: 'password123', // Will be hashed by pre-save middleware
-        role: 'nodal_officer'
+        name: "Dr. Rajesh Kumar",
+        email: "rajesh.kumar@example.com",
+        password_hash: "password123", // Will be hashed by pre-save middleware
+        role: "nodal_officer",
       },
       {
         node_id: nodes[1]._id,
-        name: 'Dr. Priya Sharma',
-        email: 'priya.sharma@example.com',
-        password_hash: 'password123', // Will be hashed by pre-save middleware
-        role: 'nodal_officer'
+        name: "Dr. Priya Sharma",
+        email: "priya.sharma@example.com",
+        password_hash: "password123", // Will be hashed by pre-save middleware
+        role: "nodal_officer",
       },
       {
         node_id: nodes[2]._id,
-        name: 'Dr. Arjun Patel',
-        email: 'arjun.patel@example.com',
-        password_hash: 'password123', // Will be hashed by pre-save middleware
-        role: 'nodal_officer'
-      }
+        name: "Dr. Arjun Patel",
+        email: "arjun.patel@example.com",
+        password_hash: "password123", // Will be hashed by pre-save middleware
+        role: "nodal_officer",
+      },
     ]);
 
     // Update nodes with their nodal officers
@@ -94,8 +97,8 @@ const seedData = async () => {
       await nodes[i].save();
     }
 
-    console.log('Created nodal officers:');
-    nodalOfficers.forEach(officer => {
+    console.log("Created nodal officers:");
+    nodalOfficers.forEach((officer) => {
       console.log(`- ${officer.name} (${officer.email})`);
     });
 
@@ -103,226 +106,232 @@ const seedData = async () => {
     const admins = await User.create([
       {
         node_id: nodes[0]._id,
-        name: 'Admin Delhi',
-        email: 'admin.delhi@example.com',
-        password_hash: 'password123', // Will be hashed by pre-save middleware
-        role: 'admin',
-        created_by: nodalOfficers[0]._id
+        name: "Admin Delhi",
+        email: "admin.delhi@example.com",
+        password_hash: "password123", // Will be hashed by pre-save middleware
+        role: "admin",
+        created_by: nodalOfficers[0]._id,
       },
       {
         node_id: nodes[1]._id,
-        name: 'Admin Mumbai',
-        email: 'admin.mumbai@example.com',
-        password_hash: 'password123', // Will be hashed by pre-save middleware
-        role: 'admin',
-        created_by: nodalOfficers[1]._id
+        name: "Admin Mumbai",
+        email: "admin.mumbai@example.com",
+        password_hash: "password123", // Will be hashed by pre-save middleware
+        role: "admin",
+        created_by: nodalOfficers[1]._id,
       },
       {
         node_id: nodes[2]._id,
-        name: 'Admin Bangalore',
-        email: 'admin.bangalore@example.com',
-        password_hash: 'password123', // Will be hashed by pre-save middleware
-        role: 'admin',
-        created_by: nodalOfficers[2]._id
-      }
+        name: "Admin Bangalore",
+        email: "admin.bangalore@example.com",
+        password_hash: "password123", // Will be hashed by pre-save middleware
+        role: "admin",
+        created_by: nodalOfficers[2]._id,
+      },
     ]);
 
     // Create faculty users
     const faculty = await User.create([
       {
         node_id: nodes[0]._id,
-        name: 'Dr. Sunita Verma',
-        email: 'sunita.verma@example.com',
-        password_hash: 'password123', // Will be hashed by pre-save middleware
-        role: 'faculty',
-        created_by: admins[0]._id
+        name: "Dr. Sunita Verma",
+        email: "sunita.verma@example.com",
+        password_hash: "password123", // Will be hashed by pre-save middleware
+        role: "faculty",
+        created_by: admins[0]._id,
       },
       {
         node_id: nodes[0]._id,
-        name: 'Prof. Rajesh Gupta',
-        email: 'rajesh.gupta@example.com',
-        password_hash: 'password123', // Will be hashed by pre-save middleware
-        role: 'faculty',
-        created_by: admins[0]._id
+        name: "Prof. Rajesh Gupta",
+        email: "rajesh.gupta@example.com",
+        password_hash: "password123", // Will be hashed by pre-save middleware
+        role: "faculty",
+        created_by: admins[0]._id,
       },
       {
         node_id: nodes[1]._id,
-        name: 'Dr. Meera Joshi',
-        email: 'meera.joshi@example.com',
-        password_hash: 'password123', // Will be hashed by pre-save middleware
-        role: 'faculty',
-        created_by: admins[1]._id
-      }
+        name: "Dr. Meera Joshi",
+        email: "meera.joshi@example.com",
+        password_hash: "password123", // Will be hashed by pre-save middleware
+        role: "faculty",
+        created_by: admins[1]._id,
+      },
     ]);
 
     // Create student users
     const students = await User.create([
       {
         node_id: nodes[0]._id,
-        name: 'Amit Kumar',
-        email: 'amit.kumar@example.com',
-        password_hash: 'password123', // Will be hashed by pre-save middleware
-        role: 'student',
-        created_by: admins[0]._id
+        name: "Amit Kumar",
+        email: "amit.kumar@example.com",
+        password_hash: "password123", // Will be hashed by pre-save middleware
+        role: "student",
+        created_by: admins[0]._id,
       },
       {
         node_id: nodes[0]._id,
-        name: 'Priya Singh',
-        email: 'priya.singh@example.com',
-        password_hash: 'password123', // Will be hashed by pre-save middleware
-        role: 'student',
-        created_by: admins[0]._id
+        name: "Priya Singh",
+        email: "priya.singh@example.com",
+        password_hash: "password123", // Will be hashed by pre-save middleware
+        role: "student",
+        created_by: admins[0]._id,
       },
       {
         node_id: nodes[1]._id,
-        name: 'Rahul Sharma',
-        email: 'rahul.sharma@example.com',
-        password_hash: 'password123', // Will be hashed by pre-save middleware
-        role: 'student',
-        created_by: admins[1]._id
+        name: "Rahul Sharma",
+        email: "rahul.sharma@example.com",
+        password_hash: "password123", // Will be hashed by pre-save middleware
+        role: "student",
+        created_by: admins[1]._id,
       },
       {
         node_id: nodes[2]._id,
-        name: 'Sneha Patel',
-        email: 'sneha.patel@example.com',
-        password_hash: 'password123', // Will be hashed by pre-save middleware
-        role: 'student',
-        created_by: admins[2]._id
-      }
+        name: "Sneha Patel",
+        email: "sneha.patel@example.com",
+        password_hash: "password123", // Will be hashed by pre-save middleware
+        role: "student",
+        created_by: admins[2]._id,
+      },
     ]);
 
     // Create GSP Authority
     const gspAuthority = await User.create({
       node_id: nodes[0]._id, // GSP Authority can be in any node
-      name: 'GSP Authority Head',
-      email: 'gsp.authority@example.com',
-      password_hash: 'password123',
-      role: 'gsp_authority'
+      name: "GSP Authority Head",
+      email: "gsp.authority@example.com",
+      password_hash: "password123",
+      role: "gsp_authority",
     });
 
-    console.log('Created GSP Authority:', gspAuthority.name);
+    console.log("Created GSP Authority:", gspAuthority.name);
 
     // Create sample institutions
     const institutions = await Institution.create([
       {
-        name: 'Tech Institute of Excellence',
-        course_name: 'Advanced Web Development',
-        coordinator_name: 'Dr. Sarah Johnson',
-        coordinator_email: 'sarah.johnson@techinstitute.edu',
-        coordinator_phone: '+91-9876543210',
-        trainer_name: 'Prof. Michael Chen',
-        trainer_email: 'michael.chen@techinstitute.edu',
-        trainer_phone: '+91-9876543211',
-        address: '123 Education Street, Tech City',
-        state: 'Maharashtra',
-        city: 'Mumbai',
-        pincode: '400001',
-        status: 'active',
+        name: "Tech Institute of Excellence",
+        course_name: "Advanced Web Development",
+        coordinator_name: "Dr. Sarah Johnson",
+        coordinator_email: "sarah.johnson@techinstitute.edu",
+        coordinator_phone: "+91-9876543210",
+        trainer_name: "Prof. Michael Chen",
+        trainer_email: "michael.chen@techinstitute.edu",
+        trainer_phone: "+91-9876543211",
+        address: "123 Education Street, Tech City",
+        state: "Maharashtra",
+        city: "Mumbai",
+        pincode: "400001",
+        status: "active",
         assigned_node_id: nodes[1]._id,
         assigned_nodal_officer: nodalOfficers[1]._id,
         verification_date: new Date(),
-        verified_by: nodalOfficers[1]._id
+        verified_by: nodalOfficers[1]._id,
       },
       {
-        name: 'Digital Learning Academy',
-        course_name: 'Data Science Fundamentals',
-        coordinator_name: 'Dr. Priya Sharma',
-        coordinator_email: 'priya.sharma@digitalacademy.edu',
-        coordinator_phone: '+91-9876543212',
-        trainer_name: 'Prof. Amit Kumar',
-        trainer_email: 'amit.kumar@digitalacademy.edu',
-        trainer_phone: '+91-9876543213',
-        address: '456 Learning Avenue, Knowledge Park',
-        state: 'Karnataka',
-        city: 'Bangalore',
-        pincode: '560001',
-        status: 'active',
+        name: "Digital Learning Academy",
+        course_name: "Data Science Fundamentals",
+        coordinator_name: "Dr. Priya Sharma",
+        coordinator_email: "priya.sharma@digitalacademy.edu",
+        coordinator_phone: "+91-9876543212",
+        trainer_name: "Prof. Amit Kumar",
+        trainer_email: "amit.kumar@digitalacademy.edu",
+        trainer_phone: "+91-9876543213",
+        address: "456 Learning Avenue, Knowledge Park",
+        state: "Karnataka",
+        city: "Bangalore",
+        pincode: "560001",
+        status: "active",
         assigned_node_id: nodes[2]._id,
         assigned_nodal_officer: nodalOfficers[2]._id,
         verification_date: new Date(),
-        verified_by: nodalOfficers[2]._id
-      }
+        verified_by: nodalOfficers[2]._id,
+      },
     ]);
 
-    console.log('Created institutions:', institutions.map(i => i.name));
+    console.log(
+      "Created institutions:",
+      institutions.map((i) => i.name)
+    );
 
     // Create courses
     const courses = await Course.create([
       {
         institution_id: institutions[0]._id,
-        course_name: 'Introduction to Programming',
-        title: 'Complete Programming Bootcamp',
-        description: 'Basic programming concepts and algorithms',
+        course_name: "Introduction to Programming",
+        title: "Complete Programming Bootcamp",
+        description: "Basic programming concepts and algorithms",
         duration: 90,
-        start_date: new Date('2024-01-15'),
-        end_date: new Date('2024-04-15'),
-        trainer_name: 'Prof. Michael Chen',
-        trainer_email: 'michael.chen@techinstitute.edu',
-        course_timing: '9:00 AM - 5:00 PM',
+        start_date: new Date("2024-01-15"),
+        end_date: new Date("2024-04-15"),
+        trainer_name: "Prof. Michael Chen",
+        trainer_email: "michael.chen@techinstitute.edu",
+        course_timing: "9:00 AM - 5:00 PM",
         course_fee: 5000,
         is_gsp_course: true,
         nodal_officer: nodalOfficers[0]._id,
-        industry_partner_name: 'TechCorp Solutions',
-        status: 'APPROVED',
-        created_by: admins[0]._id
+        industry_partner_name: "TechCorp Solutions",
+        status: "APPROVED",
+        created_by: admins[0]._id,
       },
       {
         institution_id: institutions[0]._id,
-        course_name: 'Data Structures and Algorithms',
-        title: 'Advanced DSA Course',
-        description: 'Advanced data structures and algorithm design',
+        course_name: "Data Structures and Algorithms",
+        title: "Advanced DSA Course",
+        description: "Advanced data structures and algorithm design",
         duration: 120,
-        start_date: new Date('2024-02-01'),
-        end_date: new Date('2024-05-01'),
-        trainer_name: 'Dr. Sarah Johnson',
-        trainer_email: 'sarah.johnson@techinstitute.edu',
-        course_timing: '10:00 AM - 6:00 PM',
+        start_date: new Date("2024-02-01"),
+        end_date: new Date("2024-05-01"),
+        trainer_name: "Dr. Sarah Johnson",
+        trainer_email: "sarah.johnson@techinstitute.edu",
+        course_timing: "10:00 AM - 6:00 PM",
         course_fee: 7500,
         is_gsp_course: true,
         nodal_officer: nodalOfficers[0]._id,
-        industry_partner_name: 'DataTech Inc',
-        status: 'APPROVED',
-        created_by: admins[0]._id
+        industry_partner_name: "DataTech Inc",
+        status: "APPROVED",
+        created_by: admins[0]._id,
       },
       {
         institution_id: institutions[1]._id,
-        course_name: 'Machine Learning Fundamentals',
-        title: 'ML Fundamentals Course',
-        description: 'Introduction to machine learning concepts',
+        course_name: "Machine Learning Fundamentals",
+        title: "ML Fundamentals Course",
+        description: "Introduction to machine learning concepts",
         duration: 100,
-        start_date: new Date('2024-01-20'),
-        end_date: new Date('2024-04-20'),
-        trainer_name: 'Prof. Amit Kumar',
-        trainer_email: 'amit.kumar@digitalacademy.edu',
-        course_timing: '9:30 AM - 5:30 PM',
+        start_date: new Date("2024-01-20"),
+        end_date: new Date("2024-04-20"),
+        trainer_name: "Prof. Amit Kumar",
+        trainer_email: "amit.kumar@digitalacademy.edu",
+        course_timing: "9:30 AM - 5:30 PM",
         course_fee: 6000,
         is_gsp_course: true,
         nodal_officer: nodalOfficers[1]._id,
-        industry_partner_name: 'ML Solutions',
-        status: 'APPROVED',
-        created_by: admins[1]._id
+        industry_partner_name: "ML Solutions",
+        status: "APPROVED",
+        created_by: admins[1]._id,
       },
       {
         institution_id: institutions[1]._id,
-        course_name: 'Web Development',
-        title: 'Full Stack Web Development',
-        description: 'Full-stack web development course',
+        course_name: "Web Development",
+        title: "Full Stack Web Development",
+        description: "Full-stack web development course",
         duration: 110,
-        start_date: new Date('2024-02-15'),
-        end_date: new Date('2024-05-15'),
-        trainer_name: 'Prof. Priya Sharma',
-        trainer_email: 'priya.sharma@digitalacademy.edu',
-        course_timing: '9:00 AM - 5:00 PM',
+        start_date: new Date("2024-02-15"),
+        end_date: new Date("2024-05-15"),
+        trainer_name: "Prof. Priya Sharma",
+        trainer_email: "priya.sharma@digitalacademy.edu",
+        course_timing: "9:00 AM - 5:00 PM",
         course_fee: 5500,
         is_gsp_course: true,
         nodal_officer: nodalOfficers[2]._id,
-        industry_partner_name: 'WebTech Solutions',
-        status: 'APPROVED',
-        created_by: admins[1]._id
-      }
+        industry_partner_name: "WebTech Solutions",
+        status: "APPROVED",
+        created_by: admins[1]._id,
+      },
     ]);
 
-    console.log('Created courses:', courses.map(c => c.course_name));
+    console.log(
+      "Created courses:",
+      courses.map((c) => c.course_name)
+    );
 
     // Create sample feedback after courses are created
     const feedback = await Feedback.create([
@@ -335,63 +344,63 @@ const seedData = async () => {
         instructor_effectiveness: 5,
         course_structure: 4,
         overall_satisfaction: 4,
-        comments: 'Great course with excellent content and instructor',
-        suggestions: 'More practical examples would be helpful',
-        would_recommend: true
-      }
+        comments: "Great course with excellent content and instructor",
+        suggestions: "More practical examples would be helpful",
+        would_recommend: true,
+      },
     ]);
 
-    console.log('Created sample feedback');
+    console.log("Created sample feedback");
 
     // Create faculty assignments
     await FacultyAssignment.create([
       {
         course_id: courses[0]._id,
-        faculty_id: faculty[0]._id
+        faculty_id: faculty[0]._id,
       },
       {
         course_id: courses[1]._id,
-        faculty_id: faculty[1]._id
+        faculty_id: faculty[1]._id,
       },
       {
         course_id: courses[2]._id,
-        faculty_id: faculty[0]._id
+        faculty_id: faculty[0]._id,
       },
       {
         course_id: courses[3]._id,
-        faculty_id: faculty[2]._id
-      }
+        faculty_id: faculty[2]._id,
+      },
     ]);
 
     // Create enrollments
     await Enrollment.create([
       {
         course_id: courses[0]._id,
-        student_id: students[0]._id
+        student_id: students[0]._id,
       },
       {
         course_id: courses[0]._id,
-        student_id: students[1]._id
+        student_id: students[1]._id,
       },
       {
         course_id: courses[1]._id,
-        student_id: students[0]._id
+        student_id: students[0]._id,
       },
       {
         course_id: courses[2]._id,
-        student_id: students[1]._id
+        student_id: students[1]._id,
       },
       {
         course_id: courses[3]._id,
-        student_id: students[2]._id
-      }
+        student_id: students[2]._id,
+      },
     ]);
 
     // Create sample attendance records
     const attendanceDates = [
-      new Date('2024-01-20'),
-      new Date('2024-01-25'),
-      new Date('2024-01-30')
+      new Date("2024-01-20"),
+      new Date("2024-01-25"),
+      new Date("2024-01-30"),
     ];
 
     for (const date of attendanceDates) {
@@ -400,16 +409,16 @@ const seedData = async () => {
           course_id: courses[0]._id,
           student_id: students[0]._id,
           date: date,
-          status: 'present',
-          marked_by: faculty[0]._id
+          status: "present",
+          marked_by: faculty[0]._id,
         },
         {
           course_id: courses[0]._id,
           student_id: students[1]._id,
           date: date,
-          status: 'present',
-          marked_by: faculty[0]._id
-        }
+          status: "present",
+          marked_by: faculty[0]._id,
+        },
       ]);
     }
 
@@ -419,14 +428,14 @@ const seedData = async () => {
         course_id: courses[0]._id,
         student_id: students[0]._id,
         credits_earned: 3.0,
-        awarded_by: faculty[0]._id
+        awarded_by: faculty[0]._id,
       },
       {
         course_id: courses[0]._id,
         student_id: students[1]._id,
         credits_earned: 3.0,
-        awarded_by: faculty[0]._id
-      }
+        awarded_by: faculty[0]._id,
+      },
     ]);
 
     // Issue sample certificates
@@ -434,26 +443,37 @@ const seedData = async () => {
       {
         course_id: courses[0]._id,
         student_id: students[0]._id,
-        issued_date: new Date('2024-04-16'),
-        certificate_url: 'https://drive.google.com/file/d/1r8R85voqvtx2obqYt5soUQZ3noxoQTyH/view?usp=drive_link'
+        issued_date: new Date("2024-04-16"),
+        certificate_url:
+          "https://drive.google.com/file/d/1r8R85voqvtx2obqYt5soUQZ3noxoQTyH/view?usp=drive_link",
       },
       {
         course_id: courses[0]._id,
         student_id: students[1]._id,
-        issued_date: new Date('2024-04-16'),
-        certificate_url: 'https://drive.google.com/file/d/1r8R85voqvtx2obqYt5soUQZ3noxoQTyH/view?usp=drive_link'
-      }
+        issued_date: new Date("2024-04-16"),
+        certificate_url:
+          "https://drive.google.com/file/d/1r8R85voqvtx2obqYt5soUQZ3noxoQTyH/view?usp=drive_link",
+      },
     ]);
 
     // Compute and persist progress based on attendance and credits
     const computeProgress = async (studentId, courseId) => {
-      const records = await Attendance.find({ course_id: courseId, student_id: studentId });
+      const records = await Attendance.find({
+        course_id: courseId,
+        student_id: studentId,
+      });
       const total = records.length;
-      const present = records.filter(r => r.status === 'present').length;
+      const present = records.filter((r) => r.status === "present").length;
       const attendancePct = total === 0 ? 0 : (present / total) * 100;
 
-      const credits = await Credit.find({ course_id: courseId, student_id: studentId });
-      const creditsSum = credits.reduce((sum, c) => sum + parseFloat(c.credits_earned.toString()), 0);
+      const credits = await Credit.find({
+        course_id: courseId,
+        student_id: studentId,
+      });
+      const creditsSum = credits.reduce(
+        (sum, c) => sum + parseFloat(c.credits_earned.toString()),
+        0
+      );
 
       await Progress.findOneAndUpdate(
         { student_id: studentId, course_id: courseId },
@@ -465,34 +485,33 @@ const seedData = async () => {
     await computeProgress(students[0]._id, courses[0]._id);
     await computeProgress(students[1]._id, courses[0]._id);
 
-    console.log('\n🎉 Comprehensive seed data created successfully!');
-    console.log('\nLogin credentials for testing:');
-    console.log('\n=== NODAL OFFICERS ===');
-    console.log('Email: rajesh.kumar@example.com | Password: password123');
-    console.log('Email: priya.sharma@example.com | Password: password123');
-    console.log('Email: arjun.patel@example.com | Password: password123');
-    
-    console.log('\n=== ADMINS ===');
-    console.log('Email: admin.delhi@example.com | Password: password123');
-    console.log('Email: admin.mumbai@example.com | Password: password123');
-    console.log('Email: admin.bangalore@example.com | Password: password123');
-    
-    console.log('\n=== FACULTY ===');
-    console.log('Email: sunita.verma@example.com | Password: password123');
-    console.log('Email: rajesh.gupta@example.com | Password: password123');
-    console.log('Email: meera.joshi@example.com | Password: password123');
-    
-    console.log('\n=== STUDENTS ===');
-    console.log('Email: amit.kumar@example.com | Password: password123');
-    console.log('Email: priya.singh@example.com | Password: password123');
-    console.log('Email: rahul.sharma@example.com | Password: password123');
-    console.log('Email: sneha.patel@example.com | Password: password123');
-    
+    console.log("\n🎉 Comprehensive seed data created successfully!");
+    console.log("\nLogin credentials for testing:");
+    console.log("\n=== NODAL OFFICERS ===");
+    console.log("Email: rajesh.kumar@example.com | Password: password123");
+    console.log("Email: priya.sharma@example.com | Password: password123");
+    console.log("Email: arjun.patel@example.com | Password: password123");
+
+    console.log("\n=== ADMINS ===");
+    console.log("Email: admin.delhi@example.com | Password: password123");
+    console.log("Email: admin.mumbai@example.com | Password: password123");
+    console.log("Email: admin.bangalore@example.com | Password: password123");
+
+    console.log("\n=== FACULTY ===");
+    console.log("Email: sunita.verma@example.com | Password: password123");
+    console.log("Email: rajesh.gupta@example.com | Password: password123");
+    console.log("Email: meera.joshi@example.com | Password: password123");
+
+    console.log("\n=== STUDENTS ===");
+    console.log("Email: amit.kumar@example.com | Password: password123");
+    console.log("Email: priya.singh@example.com | Password: password123");
+    console.log("Email: rahul.sharma@example.com | Password: password123");
+    console.log("Email: sneha.patel@example.com | Password: password123");
   } catch (error) {
-    console.error('Error seeding data:', error);
+    console.error("Error seeding data:", error);
   } finally {
     await mongoose.connection.close();
-    console.log('Database connection closed');
+    console.log("Database connection closed");
   }
 };
 
@@ -512,14 +531,31 @@ seedData();
 
 // API Usage Examples
 
-
-
 // ========================================
 // COMPLETE SSRGSP WORKFLOW TESTING
 // ========================================
 
 /*
-🏛️ INSTITUTION & COURSE LIFECYCLE TESTING
+� CERTIFICATE CODE FORMAT
+
+Each certificate is assigned a unique SSRGSP code in the following format:
+SSRGSP/{CourseType}/{Location}/{Year}/{Month}/{BatchNo}/{CertificateNo}
+
+Example: SSRGSP/WEB/BLR/25/08/01/0001
+
+Components:
+- SSRGSP: Fixed prefix
+- CourseType: First 3 letters of course_name (uppercase)
+- Location: First 3 letters of institution city (uppercase)
+- Year: Last 2 digits of course start year (YY)
+- Month: 2-digit month from course start date (MM)
+- BatchNo: Fixed as "01"
+- CertificateNo: 4-digit auto-incremented number (0001-9999)
+
+The code is stored in the certificate's unique_hash field and is generated
+automatically when the certificate is issued.
+
+�🏛️ INSTITUTION & COURSE LIFECYCLE TESTING
 
 1️⃣ INSTITUTION REGISTRATION
 POST http://localhost:3000/api/institutions/register
@@ -706,6 +742,13 @@ Authorization: Bearer [STUDENT_TOKEN]
 {
   "course_id": "[COURSE_ID_FROM_STEP_4]"
 }
+Response: {
+  "message": "Certificate request submitted successfully",
+  "certificate": {
+    "_id": "...",
+    "status": "requested"
+  }
+}
 
 1️⃣8️⃣ VERIFY CERTIFICATE (Nodal Officer)
 POST http://localhost:3000/api/certificates/verify
@@ -713,6 +756,12 @@ Authorization: Bearer [NODAL_OFFICER_TOKEN]
 {
   "certificate_id": "[CERTIFICATE_ID_FROM_STEP_17]",
   "action": "approve"
+}
+Response: {
+  "message": "Certificate verified successfully",
+  "certificate": {
+    "status": "verified"
+  }
 }
 
 1️⃣9️⃣ INSTITUTION SIGN CERTIFICATE (Admin)
@@ -722,6 +771,12 @@ Authorization: Bearer [ADMIN_TOKEN]
   "certificate_id": "[CERTIFICATE_ID_FROM_STEP_17]",
   "institution_signature": "Institution_Digital_Signature_Hash_12345"
 }
+Response: {
+  "message": "Certificate signed by institution successfully",
+  "certificate": {
+    "status": "institution_signed"
+  }
+}
 
 2️⃣0️⃣ GSP APPROVE CERTIFICATE (GSP Authority)
 POST http://localhost:3000/api/certificates/gsp-approve
@@ -729,6 +784,12 @@ Authorization: Bearer [GSP_AUTHORITY_TOKEN]
 {
   "certificate_id": "[CERTIFICATE_ID_FROM_STEP_17]",
   "gsp_signature": "GSP_Authority_Digital_Signature_Hash_67890"
+}
+Response: {
+  "message": "Certificate approved by GSP Authority successfully",
+  "certificate": {
+    "status": "gsp_approved"
+  }
 }
 
 2️⃣1️⃣ ISSUE CERTIFICATE (Final Step)
@@ -738,8 +799,32 @@ Authorization: Bearer [NODAL_OFFICER_TOKEN]
   "certificate_id": "[CERTIFICATE_ID_FROM_STEP_17]",
   "certificate_url": "https://certificates.ssrgsp.gov.in/cert_12345.pdf"
 }
+Response: {
+  "message": "Certificate issued successfully",
+  "certificate": {
+    "status": "issued",
+    "certificate_url": "https://certificates.ssrgsp.gov.in/cert_12345.pdf",
+    "unique_hash": "SSRGSP/WEB/BLR/25/08/01/0001"  // SSRGSP Certificate Code
+  }
+}
 
-2️⃣2️⃣ DOWNLOAD CERTIFICATE (Student)
+2️⃣2️⃣ SEARCH CERTIFICATE BY CODE
+GET http://localhost:3000/api/certificates/search?code=SSRGSP/WEB/BLR/25/08/01/0001
+Authorization: Bearer [ANY_VALID_TOKEN]
+Response: {
+  "prefix": "SSRGSP",
+  "courseType": "WEB",       // First 3 letters of course_name
+  "location": "BLR",         // First 3 letters of institution city
+  "year": "2025",           // From course start_date
+  "month": "08",            // From course start_date
+  "batchNo": "01",          // Fixed value
+  "certificateNumber": "0001", // Auto-incremented
+  "fullDetails": {
+    // Complete certificate information with populated course and student details
+  }
+}
+
+2️⃣3️⃣ DOWNLOAD CERTIFICATE (Student)
 GET http://localhost:3000/api/certificates/download/[CERTIFICATE_ID_FROM_STEP_17]
 Authorization: Bearer [STUDENT_TOKEN]
 
