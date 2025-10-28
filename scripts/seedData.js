@@ -610,7 +610,7 @@ Authorization: Bearer [ADMIN_TOKEN]
   "industry_partner_name": "TechCorp Solutions"
 }
 
-5️⃣ APPROVE COURSE (GSP Authority)
+5️⃣ APPROVE COURSE (GSP Authority)-----> nodal officer
 POST http://localhost:3000/api/courses/approve
 Authorization: Bearer [GSP_AUTHORITY_TOKEN]
 {

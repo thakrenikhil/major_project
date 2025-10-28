@@ -182,21 +182,14 @@ const getInstitutions = async (req, res) => {
     const user = req.user;
     let query = {};
     if (user.role === "nodal_officer" ) {
-      console.log("Fetching institutions");
       query.assigned_nodal_officer = user._id;
     } else if (user.role === "gsp_authority") {
       // GSP Authority can see all institutions
     } else if(user.role === "admin" ){
       query.coordinator_email = user.email;
     }else {
-      console.log(user.role);
-      console.log("yes");
-      console.log(query);
       return res.status(403).json({ error: "Insufficient permissions" });
     }
-    console.log(user);
-    console.log("yes");
-    console.log(query);
     const institutions = await Institution.find(query)
       .populate("assigned_nodal_officer", "name email")
       .populate("verified_by", "name email")
@@ -205,7 +198,6 @@ const getInstitutions = async (req, res) => {
       // if(institutions.length === 0){
       //   institutions = await 
       // }
-    console.log(institutions);
     res.json({ institutions });
   } catch (error) {
     res.status(500).json({ error: error.message });

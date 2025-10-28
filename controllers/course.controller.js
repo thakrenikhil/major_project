@@ -3,6 +3,7 @@ const User = require("../models/user.model");
 const Institution = require("../models/institution.model");
 const Enrollment = require("../models/enrollment.model");
 const Payment = require("../models/payment.model");
+const { Admin } = require("mongodb");
 
 // Create Course (Institution Admin)
 const createCourse = async (req, res) => {
@@ -52,10 +53,11 @@ const createCourse = async (req, res) => {
 
     // Validate institution belongs to admin's node
     const institution = await Institution.findById(institution_id);
-    if (
-      !institution ||
-      institution.assigned_node_id.toString() !== creator.node_id._id.toString()
-    ) {
+    const coordinator = await User.findOne({
+      email: institution.coordinator_email,
+      role: "admin",
+    });
+    if (!coordinator || coordinator._id.toString() !== creator._id.toString()) {
       return res
         .status(403)
         .json({ error: "Institution not in your jurisdiction" });
@@ -70,7 +72,7 @@ const createCourse = async (req, res) => {
     ) {
       return res.status(400).json({ error: "Invalid nodal officer" });
     }
-    
+
     const course = new Course({
       institution_id,
       course_name,
@@ -107,7 +109,10 @@ const approveCourse = async (req, res) => {
     const { course_id, action } = req.body; // action: 'approve' or 'reject'
     const approver = req.user;
 
-    if (approver.role !== "gsp_authority" && approver.role !== "nodal_officer") {
+    if (
+      approver.role !== "gsp_authority" &&
+      approver.role !== "nodal_officer"
+    ) {
       return res
         .status(403)
         .json({ error: "Only GSP Authority can approve courses" });
