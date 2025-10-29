@@ -76,12 +76,10 @@ const createUser = async (req, res) => {
     if (creator.role === "nodal_officer") {
       // Nodal officer can create admins, faculty, students
       if (!["admin", "faculty", "student"].includes(role)) {
-        return res
-          .status(403)
-          .json({
-            error:
-              "Nodal officer can only create admin, faculty, or student accounts",
-          });
+        return res.status(403).json({
+          error:
+            "Nodal officer can only create admin, faculty, or student accounts",
+        });
       }
     } else if (creator.role === "admin") {
       // Admin can create faculty and students
@@ -354,7 +352,52 @@ const markAttendance = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+const BulkMarkAttendance = async (req, res) => {
+  try {
+    const { student_ids, course_id, date, trainer_id } = req.body;
 
+    // ✅ Validate required fields
+    if (!student_ids || !course_id || !date || !trainer_id) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    // ✅ Convert comma-separated list to array (and trim spaces)
+    const student_id_array = student_ids.split(",").map((id) => id.trim());
+
+    // ✅ Ensure date is a proper Date object
+    const attendanceDate = new Date(date);
+    if (isNaN(attendanceDate.getTime())) {
+      return res.status(400).json({ error: "Invalid date format" });
+    }
+
+    // ✅ Optionally prevent duplicates: remove records if already marked for same date/course
+    await Attendance.deleteMany({
+      course_id,
+      date: attendanceDate,
+      student_id: { $in: student_id_array },
+    });
+
+    // ✅ Prepare bulk insert
+    const attendanceRecords = student_id_array.map((student_id) => ({
+      course_id,
+      student_id,
+      date: attendanceDate,
+      status: "present", // default — can be parameterized if needed
+      marked_by: trainer_id,
+    }));
+
+    // ✅ Insert all attendance records at once
+    await Attendance.insertMany(attendanceRecords);
+
+    res.status(200).json({
+      message: "Attendance marked successfully",
+      count: attendanceRecords.length,
+    });
+  } catch (error) {
+    console.error("Error marking attendance:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
 // Get or compute Progress (student can view own; others limited by node)
 const getProgress = async (req, res) => {
   try {
@@ -499,6 +542,7 @@ module.exports = {
   enrollStudent,
   getCourses,
   markAttendance,
+  BulkMarkAttendance, 
   getProgress,
   generateCertificate,
   getNodalOfficers,

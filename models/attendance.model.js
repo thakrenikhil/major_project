@@ -17,7 +17,7 @@ const attendanceSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['present', 'absent', 'late', 'excused'],
+    enum: ['present', 'absent'],
     required: [true, 'Status is required']
   },
   marked_by: {
@@ -28,7 +28,6 @@ const attendanceSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-
 // Ensure unique attendance record per student per course per date
 attendanceSchema.index({ course_id: 1, student_id: 1, date: 1 }, { unique: true });
 

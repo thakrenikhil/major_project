@@ -10,6 +10,7 @@ const {
   getProgress,
   generateCertificate,
   getNodalOfficers,
+  BulkMarkAttendance,
 } = require("../controllers/auth.controller");
 const { auth, authorize } = require("../middlewares/auth.middleware");
 
@@ -46,7 +47,13 @@ router.post(
   authorize("nodal_officer", "admin", "faculty"),
   markAttendance
 );
-
+//
+router.post(
+  "/bulk-mark-attendance",
+  auth,
+  authorize("nodal_officer", "admin", "faculty"),
+  BulkMarkAttendance
+);
 // Progress routes
 router.get("/progress", auth, getProgress);
 

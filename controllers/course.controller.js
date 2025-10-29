@@ -268,6 +268,8 @@ const getCourses = async (req, res) => {
       // Students can see courses they're enrolled in
       const enrollments = await Enrollment.find({ student_id: user._id });
       query._id = { $in: enrollments.map((e) => e.course_id) };
+    } else if (user.role === "faculty") {
+      query.trainer_email = user.email;
     }
 
     const courses = await Course.find(query)
