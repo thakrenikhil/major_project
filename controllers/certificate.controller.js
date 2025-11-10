@@ -100,13 +100,10 @@ const requestCertificate = async (req, res) => {
       student_id: student._id,
       course_id,
     });
-
-    if (!feedback) {
-      return res
-        .status(400)
-        .json({
-          error: "Student must submit feedback before requesting certificate",
-        });
+    if (false || !feedback) {
+      return res.status(400).json({
+        error: "Student must submit feedback before requesting certificate",
+      });
     }
 
     // Check attendance requirements (minimum 80% attendance)
@@ -174,11 +171,7 @@ const verifyCertificate = async (req, res) => {
     }
 
     // Check if certificate is in the nodal officer's node
-    if (
-      !certificate.course_id.institution_id.assigned_node_id.equals(
-        verifier.node_id
-      )
-    ) {
+    if (!certificate.course_id.nodal_officer.equals(verifier._id)) {
       return res
         .status(403)
         .json({ error: "Certificate not in your jurisdiction" });
@@ -220,11 +213,9 @@ const institutionSignCertificate = async (req, res) => {
     }
 
     if (!certificate_id || !institution_signature) {
-      return res
-        .status(400)
-        .json({
-          error: "Certificate ID and institution signature are required",
-        });
+      return res.status(400).json({
+        error: "Certificate ID and institution signature are required",
+      });
     }
 
     const certificate = await Certificate.findById(certificate_id);
@@ -234,11 +225,9 @@ const institutionSignCertificate = async (req, res) => {
     }
 
     if (certificate.status !== "verified") {
-      return res
-        .status(400)
-        .json({
-          error: "Certificate must be verified before institution signing",
-        });
+      return res.status(400).json({
+        error: "Certificate must be verified before institution signing",
+      });
     }
 
     certificate.status = "institution_signed";
@@ -281,11 +270,9 @@ const gspApproveCertificate = async (req, res) => {
     }
 
     if (certificate.status !== "institution_signed") {
-      return res
-        .status(400)
-        .json({
-          error: "Certificate must be institution signed before GSP approval",
-        });
+      return res.status(400).json({
+        error: "Certificate must be institution signed before GSP approval",
+      });
     }
 
     certificate.status = "gsp_approved";
@@ -388,8 +375,10 @@ const getCertificates = async (req, res) => {
       query.student_id = user._id;
     } else if (user.role === "nodal_officer") {
       // Nodal officer can see certificates for courses in their node
+      console.log("yes");
+      console.log(user);
       const courses = await Course.find({
-        "institution_id.assigned_node_id": user.node_id,
+        "nodal_officer": user._id,
       });
       query.course_id = { $in: courses.map((c) => c._id) };
     }

@@ -244,7 +244,7 @@ const getCourses = async (req, res) => {
   try {
     const user = req.user;
     const { status, institution_id } = req.query;
-
+    console.log(institution_id);
     let query = {};
 
     if (status) {
@@ -260,10 +260,10 @@ const getCourses = async (req, res) => {
       query.nodal_officer = user._id;
     } else if (user.role === "admin") {
       // Admin can see courses from their institution
-      const institutions = await Institution.find({
-        assigned_node_id: user.node_id,
-      });
-      query.institution_id = { $in: institutions.map((i) => i._id) };
+    //   const institutions = await Institution.find({
+    //     assigned_node_id: user.node_id,...query
+    //   });
+    //   query.institution_id = { $in: institutions.map((i) => i._id) };
     } else if (user.role === "student") {
       // Students can see courses they're enrolled in
       const enrollments = await Enrollment.find({ student_id: user._id });
@@ -316,6 +316,21 @@ const getCourseById = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+//get course by id
+const getCourseByUserId = async (req, res) => {
+  const { trainer_email } = req.params;
+  console.log(trainer_email);
+  if (!trainer_email.length) {
+    return res.status(400).json({ error: "please send trainer's email" });
+  }
+  const courses = await Course.find({ trainer_email })
+    .populate("institution_id", "name")
+    .populate("nodal_officer", "name email")
+    .populate("approved_by", "name email")
+    .populate("created_by", "name email");
+  console.log(courses);
+  return res.status(200).json({ courses });
+};
 
 module.exports = {
   createCourse,
@@ -324,4 +339,5 @@ module.exports = {
   completeCourse,
   getCourses,
   getCourseById,
+  getCourseByUserId,
 };
