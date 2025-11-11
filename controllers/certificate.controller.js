@@ -3,7 +3,9 @@ const Course = require("../models/course.model");
 const Enrollment = require("../models/enrollment.model");
 const Feedback = require("../models/feedback.model");
 const Attendance = require("../models/attendance.model");
-const { genCertificate } = require("../utils/GenerateCertificate/genCertificate");
+const {
+  genCertificate,
+} = require("../utils/GenerateCertificate/genCertificate");
 // Helper function to generate padded numbers
 const padNumber = (num, width) => {
   return String(num).padStart(width, "0");
@@ -300,10 +302,8 @@ const issueCertificate = async (req, res) => {
         .json({ error: "Insufficient permissions to issue certificates" });
     }
 
-    if (!certificate_id ) {
-      return res
-        .status(400)
-        .json({ error: "Certificate ID  are required" });
+    if (!certificate_id) {
+      return res.status(400).json({ error: "Certificate ID  are required" });
     }
 
     const certificate = await Certificate.findById(certificate_id)
@@ -334,7 +334,7 @@ const issueCertificate = async (req, res) => {
     );
 
     certificate.status = "issued";
-    certificate.certificate_url = genCertificate(
+    certificate.certificate_url = await genCertificate(
       certificate.student_id.name,
       certificate.course_id.course_name
     );
