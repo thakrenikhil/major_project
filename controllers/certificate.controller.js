@@ -1,12 +1,9 @@
 const Certificate = require("../models/certificate.model");
-const User = require("../models/user.model");
 const Course = require("../models/course.model");
 const Enrollment = require("../models/enrollment.model");
 const Feedback = require("../models/feedback.model");
 const Attendance = require("../models/attendance.model");
-const Progress = require("../models/progress.model");
-const Institution = require("../models/institution.model");
-
+const { genCertificate } = require("../utils/GenerateCertificate/genCertificate");
 // Helper function to generate padded numbers
 const padNumber = (num, width) => {
   return String(num).padStart(width, "0");
@@ -294,7 +291,7 @@ const gspApproveCertificate = async (req, res) => {
 // Issue Certificate (Final step)
 const issueCertificate = async (req, res) => {
   try {
-    const { certificate_id, certificate_url } = req.body;
+    const { certificate_id } = req.body;
     const issuer = req.user;
 
     if (!["nodal_officer", "admin", "gsp_authority"].includes(issuer.role)) {
@@ -303,18 +300,20 @@ const issueCertificate = async (req, res) => {
         .json({ error: "Insufficient permissions to issue certificates" });
     }
 
-    if (!certificate_id || !certificate_url) {
+    if (!certificate_id ) {
       return res
         .status(400)
-        .json({ error: "Certificate ID and certificate URL are required" });
+        .json({ error: "Certificate ID  are required" });
     }
 
-    const certificate = await Certificate.findById(certificate_id).populate({
-      path: "course_id",
-      populate: {
-        path: "institution_id",
-      },
-    });
+    const certificate = await Certificate.findById(certificate_id)
+      .populate({
+        path: "course_id",
+        populate: {
+          path: "institution_id",
+        },
+      })
+      .populate("student_id");
 
     if (!certificate) {
       return res.status(404).json({ error: "Certificate not found" });
@@ -335,7 +334,10 @@ const issueCertificate = async (req, res) => {
     );
 
     certificate.status = "issued";
-    certificate.certificate_url = certificate_url;
+    certificate.certificate_url = genCertificate(
+      certificate.student_id.name,
+      certificate.course_id.course_name
+    );
     certificate.issued_date = new Date();
     certificate.unique_hash = ssrgspCode;
 
@@ -378,7 +380,7 @@ const getCertificates = async (req, res) => {
       console.log("yes");
       console.log(user);
       const courses = await Course.find({
-        "nodal_officer": user._id,
+        nodal_officer: user._id,
       });
       query.course_id = { $in: courses.map((c) => c._id) };
     }

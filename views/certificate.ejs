@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Certificate of Training Completion</title>
+	<style>
+		body {
+			font-family: 'Times New Roman', serif;
+			text-align: center;
+			background: #fff;
+			border: 15px solid #d4af37;
+			margin: 40px;
+			padding: 40px;
+		}
+
+		.header img {
+			height: 70px;
+		}
+
+		h1 {
+			font-size: 32px;
+			letter-spacing: 2px;
+			margin-bottom: 10px;
+		}
+
+		h2 {
+			font-size: 22px;
+			text-transform: uppercase;
+			font-weight: bold;
+			margin-top: 15px;
+		}
+
+		.details {
+			font-size: 18px;
+			margin: 20px auto;
+			width: 80%;
+			line-height: 1.6;
+		}
+
+		.bold {
+			font-weight: bold;
+		}
+
+		.signatures {
+			display: flex;
+			justify-content: space-around;
+			margin-top: 50px;
+			font-size: 14px;
+		}
+
+		.sign {
+			text-align: center;
+		}
+
+		.title {
+			font-size: 20px;
+			margin-top: 10px;
+			font-weight: bold;
+		}
+
+		.underline {
+			border-bottom: 1px solid #000;
+			display: inline-block;
+			width: 220px;
+		}
+
+		.logos {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.logos img {
+			height: 70px;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="logos">
+		<img src="/images/kaushalam.png" alt="Kaushalam Logo">
+		<img src="/images/ssrgsp.png" alt="SSR Global Skills Park Logo">
+	</div>
+
+	<h1>CERTIFICATE</h1>
+	<h3>OF TRAINING COMPLETION</h3>
+
+	<p>This is to certify that</p>
+	<h2>
+		<%= name %>
+	</h2>
+
+	<div class="details">
+		has successfully completed the training under the
+		<span class="bold">Hub and Spoke Model</span> under supervision of
+		<span class="bold">SSR Global Skills Park, Bhopal</span> at
+		<span class="bold">
+			<%= courseName %>
+		</span>.<br>
+		The training was held from
+		<span class="bold">
+			<%= startDate %>
+		</span> to
+		<span class="bold">
+			<%= endDate %>
+		</span>.
+		<br><br>
+		Participant has shown commendable dedication and active engagement throughout the program.
+		We appreciate their commitment to learning and skill development.
+	</div>
+
+	<div class="signatures">
+		<div class="sign">
+			<div class="underline"></div><br>
+			<span>Vishal Shrivastava</span><br>
+			<span>(Hub & Spoke - SSR-GSP)</span><br>
+			<span>Nodal Officer</span>
+		</div>
+		<div class="sign">
+			<div class="underline"></div><br>
+			<span>Ashok Kuval</span><br>
+			<span>(Hub & Spoke / ITI Principal)</span><br>
+			<span>Member</span>
+		</div>
+		<div class="sign">
+			<div class="underline"></div><br>
+			<span>Girish Sharma, IAS</span><br>
+			<span>CEO, SSRGSP</span>
+		</div>
+	</div>
+</body>
+
+</html>

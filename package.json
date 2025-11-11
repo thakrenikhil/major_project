@@ -14,14 +14,18 @@
   "type": "commonjs",
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
+    "ejs": "^3.1.10",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.3",
     "mongodb": "^6.19.0",
     "mongoose": "^8.18.1",
-    "node-cron": "^4.2.1"
+    "multer": "^2.0.2",
+    "node-cron": "^4.2.1",
+    "puppeteer": "^24.29.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
