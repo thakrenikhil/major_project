@@ -20,7 +20,7 @@ const uploadOnCloud = async (filePath) => {
     });
     return response.url;
   } catch (error) {
-    fs.unlinkSync(filePath);
+    // fs.unlinkSync(filePath);
     return null;
   }
 };
