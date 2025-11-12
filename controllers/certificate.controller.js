@@ -130,6 +130,7 @@ const requestCertificate = async (req, res) => {
       student_id: student._id,
       status: "requested",
       requested_date: new Date(),
+	  issued_date:new Date(),
     });
 
     await certificate.save();

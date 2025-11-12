@@ -18,7 +18,7 @@ const certificateSchema = new mongoose.Schema({
   },
   certificate_url: {
     type: String,
-    required: [true, 'Certificate URL is required']
+    // required: [true, 'Certificate URL is required']
   },
   unique_hash: {
     type: String,
