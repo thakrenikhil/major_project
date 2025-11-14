@@ -109,7 +109,7 @@ const assignNodalOfficer = async (req, res) => {
 
     institution.assigned_node_id = nodalOfficer.node_id;
     institution.assigned_nodal_officer = nodal_officer_id;
-    institution.status = "approved";
+    institution.status = "active";
 
     await institution.save();
 
