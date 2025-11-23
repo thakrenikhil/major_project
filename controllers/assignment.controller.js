@@ -4,6 +4,11 @@ const Course = require("../models/course.model");
 const User = require("../models/user.model");
 const Enrollment = require("../models/enrollment.model");
 
+// helper function 
+const parseDate = (d) => {
+	const [year, month, day] = d.split("-").map(Number);
+	return new Date(year, month - 1, day); // Local date, no timezone shift
+};
 // Create Assignment (Faculty/Admin)
 const createAssignment = async (req, res) => {
   try {
@@ -51,13 +56,14 @@ const createAssignment = async (req, res) => {
         .status(400)
         .json({ error: "Course must be in progress to create assignments" });
     }
+    console.log(due_date);
 
     const assignment = new Assignment({
       course_id,
       title,
       description,
       instructions,
-      due_date: new Date(due_date),
+      due_date: parseDate(due_date),
       max_marks,
       weightage,
       assignment_type: assignment_type || "individual",

@@ -16,7 +16,7 @@ const assignmentSchema = new mongoose.Schema({
     required: [true, 'Assignment description is required'],
     trim: true
   },
-  last_date: {
+  due_date: {
     type: Date,
 	default:Date.now, 
     required: [true, 'Due date is required']
