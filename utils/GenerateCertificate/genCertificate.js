@@ -3,13 +3,21 @@ const fs = require("fs");
 const path = require("path");
 const puppeteer = require("puppeteer");
 const { uploadOnCloud } = require("../cloudinary/config.cloudinary");
-const genCertificate = async (name, course) => {
+// certificate.student_id.name,
+//   certificate.course_id.course_name,
+//   certificate.course_id.start_date,
+//   certificate.course_id.end_date,
+//   certificate.unique_hash;
+const genCertificate = async (name, course, startDate, endDate, uniqueHash) => {
   try {
     const html = await ejs.renderFile(
       path.join(process.cwd(), "views", "certificate.ejs"),
       {
         name,
         course,
+        startDate,
+        endDate,
+        uniqueHash,
         date: new Date().toLocaleDateString(),
       }
     );

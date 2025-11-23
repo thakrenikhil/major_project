@@ -337,7 +337,11 @@ const issueCertificate = async (req, res) => {
     certificate.status = "issued";
     certificate.certificate_url = await genCertificate(
       certificate.student_id.name,
-      certificate.course_id.course_name
+      certificate.course_id.course_name,
+      certificate.course_id.start_date,
+      certificate.course_id.end_date , 
+	  certificate.unique_hash
+
     );
     certificate.issued_date = new Date();
     certificate.unique_hash = ssrgspCode;
