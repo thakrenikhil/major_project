@@ -3,6 +3,7 @@ const Course = require("../models/course.model");
 const Enrollment = require("../models/enrollment.model");
 const Payment = require("../models/payment.model");
 const Node = require("../models/node.model");
+const XLSX = require("xlsx");
 
 // Register Student (Nodal Officer/Admin)
 const registerStudent = async (req, res) => {
@@ -91,6 +92,182 @@ const registerStudent = async (req, res) => {
         role: student.role,
         node: student.node_id,
       },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Bulk Register Students from Excel
+const bulkRegisterStudents = async (req, res) => {
+  try {
+    const creator = req.user;
+
+    if (!["nodal_officer", "admin"].includes(creator.role)) {
+      return res.status(403).json({
+        error: "Only nodal officers and admins can register students",
+      });
+    }
+
+    // Check if file is uploaded
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: "Excel file is required" });
+    }
+
+    // Find the file in the uploaded files
+    const fileObj = req.files.find((f) => f.fieldname === "file");
+    if (!fileObj) {
+      return res.status(400).json({ error: "Excel file is required" });
+    }
+
+    // Parse Excel file
+    let workbook;
+    try {
+      workbook = XLSX.read(fileObj.buffer, { type: "buffer" });
+    } catch (error) {
+      return res.status(400).json({ error: "Invalid Excel file format" });
+    }
+
+    // Get first sheet
+    const sheetName = workbook.SheetNames[0];
+    if (!sheetName) {
+      return res.status(400).json({ error: "Excel file is empty" });
+    }
+
+    const sheet = workbook.Sheets[sheetName];
+    const studentsData = XLSX.utils.sheet_to_json(sheet);
+
+    if (!studentsData || studentsData.length === 0) {
+      return res.status(400).json({ error: "No student data found in Excel" });
+    }
+
+    // Validate required columns
+    const requiredColumns = [
+      "name",
+      "email",
+      "password",
+      "parents_name",
+      "mobile",
+      "address",
+      "govt_id",
+      "govt_id_type",
+    ];
+
+    const firstRow = studentsData[0];
+    const missingColumns = requiredColumns.filter((col) => !(col in firstRow));
+
+    if (missingColumns.length > 0) {
+      return res.status(400).json({
+        error: `Missing required columns: ${missingColumns.join(", ")}`,
+      });
+    }
+
+    // Get node_id from request body or use creator's node_id
+    const { node_id } = req.body;
+    const userNodeId = node_id || creator.node_id;
+
+    // Validate node exists
+    const node = await Node.findById(userNodeId);
+    if (!node) {
+      return res.status(400).json({ error: "Invalid node" });
+    }
+
+    const results = {
+      successful: [],
+      failed: [],
+      summary: {
+        total: studentsData.length,
+        successCount: 0,
+        failureCount: 0,
+      },
+    };
+
+    // Process each student
+    for (let index = 0; index < studentsData.length; index++) {
+      const studentData = studentsData[index];
+      const rowNumber = index + 2; // Excel row number (1-indexed, +1 for header)
+
+      try {
+        // Validate required fields
+        const {
+          name,
+          email,
+          password,
+          parents_name,
+          mobile,
+          address,
+          govt_id,
+          govt_id_type,
+        } = studentData;
+
+        if (
+          !name ||
+          !email ||
+          !password ||
+          !parents_name ||
+          !mobile ||
+          !address ||
+          !govt_id ||
+          !govt_id_type
+        ) {
+          throw new Error("All required fields must be provided");
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          throw new Error("Invalid email format");
+        }
+
+        // Check if email already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+          throw new Error("Email already registered");
+        }
+
+        // Check if government ID already exists
+        const existingGovtId = await User.findOne({ govt_id });
+        if (existingGovtId) {
+          throw new Error("Government ID already registered");
+        }
+
+        // Create student
+        const student = new User({
+          node_id: userNodeId,
+          name,
+          email,
+          password_hash: password,
+          role: "student",
+          parents_name,
+          mobile,
+          address,
+          govt_id,
+          govt_id_type,
+          created_by: creator._id,
+        });
+
+        await student.save();
+
+        results.successful.push({
+          rowNumber,
+          email,
+          name,
+          id: student._id,
+        });
+        results.summary.successCount++;
+      } catch (error) {
+        results.failed.push({
+          rowNumber,
+          email: studentData.email || "N/A",
+          reason: error.message,
+        });
+        results.summary.failureCount++;
+      }
+    }
+
+    res.status(201).json({
+      message: "Bulk student registration completed",
+      results,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -350,12 +527,12 @@ const getStudentById = async (req, res) => {
   }
 };
 const getStudentByCourseId = async (req, res) => {
-	console.log(req.params)
+  console.log(req.params);
   const { course_id } = req.params;
   if (!course_id) {
     return res.status(404).json({ error: "course is required " });
   }
-  console.log("1")
+  console.log("1");
   const enroll = await Enrollment.find({ course_id: course_id }).populate(
     "student_id"
   );
@@ -366,6 +543,7 @@ const getStudentByCourseId = async (req, res) => {
 
 module.exports = {
   registerStudent,
+  bulkRegisterStudents,
   enrollStudent,
   bulkEnrollStudents,
   getStudents,

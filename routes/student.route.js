@@ -1,6 +1,8 @@
 const express = require("express");
+const multer = require("multer");
 const {
   registerStudent,
+  bulkRegisterStudents,
   enrollStudent,
   bulkEnrollStudents,
   getStudents,
@@ -8,6 +10,8 @@ const {
   getStudentByCourseId,
 } = require("../controllers/student.controller");
 const { auth, authorize } = require("../middlewares/auth.middleware");
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = express.Router();
 
@@ -17,6 +21,22 @@ router.post(
   auth,
   authorize("nodal_officer", "admin"),
   registerStudent
+);
+router.post(
+  "/bulk-register",
+  auth,
+  authorize("nodal_officer", "admin"),
+  (req, res, next) => {
+    upload.any()(req, res, (err) => {
+      if (err) {
+        return res
+          .status(400)
+          .json({ error: "File upload error: " + err.message });
+      }
+      next();
+    });
+  },
+  bulkRegisterStudents
 );
 router.post(
   "/enroll",
