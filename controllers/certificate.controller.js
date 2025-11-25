@@ -95,15 +95,15 @@ const requestCertificate = async (req, res) => {
     }
 
     // Check if student has submitted feedback
-    const feedback = await Feedback.findOne({
-      student_id: student._id,
-      course_id,
-    });
-    if (false || !feedback) {
-      return res.status(400).json({
-        error: "Student must submit feedback before requesting certificate",
-      });
-    }
+    // const feedback = await Feedback.findOne({
+    //   student_id: student._id,
+    //   course_id,
+    // });
+    // if (false || !feedback) {
+    //   return res.status(400).json({
+    //     error: "Student must submit feedback before requesting certificate",
+    //   });
+    // }
 
     // Check attendance requirements (minimum 80% attendance)
     const attendanceRecords = await Attendance.find({
