@@ -141,7 +141,7 @@ const seedData = async () => {
         created_by: admins[0]._id,
       },
       {
-        node_id: nodes[0]._id,
+        node_id: nodes[1]._id,
         name: "Prof. Rajesh Gupta",
         email: "rajesh.gupta@example.com",
         password_hash: "password123", // Will be hashed by pre-save middleware
@@ -149,7 +149,7 @@ const seedData = async () => {
         created_by: admins[0]._id,
       },
       {
-        node_id: nodes[1]._id,
+        node_id: nodes[2]._id,
         name: "Dr. Meera Joshi",
         email: "meera.joshi@example.com",
         password_hash: "password123", // Will be hashed by pre-save middleware
