@@ -130,7 +130,7 @@ const requestCertificate = async (req, res) => {
       student_id: student._id,
       status: "requested",
       requested_date: new Date(),
-	  issued_date:new Date(),
+      issued_date: new Date(),
     });
 
     await certificate.save();
@@ -339,13 +339,11 @@ const issueCertificate = async (req, res) => {
       certificate.student_id.name,
       certificate.course_id.course_name,
       certificate.course_id.start_date,
-      certificate.course_id.end_date , 
-	  certificate.unique_hash
-
+      certificate.course_id.end_date,
+      certificate.unique_hash
     );
     certificate.issued_date = new Date();
     certificate.unique_hash = ssrgspCode;
-
     await certificate.save();
 
     res.json({
@@ -409,11 +407,11 @@ const downloadCertificate = async (req, res) => {
     const { certificate_id } = req.params;
     const student = req.user;
 
-    if (student.role !== "student") {
-      return res
-        .status(403)
-        .json({ error: "Only students can download certificates" });
-    }
+    // if (student.role !== "student") {
+    //   return res
+    //     .status(403)
+    //     .json({ error: "Only students can download certificates" });
+    // }
 
     const certificate = await Certificate.findById(certificate_id);
 
@@ -421,9 +419,9 @@ const downloadCertificate = async (req, res) => {
       return res.status(404).json({ error: "Certificate not found" });
     }
 
-    if (!certificate.student_id.equals(student._id)) {
-      return res.status(403).json({ error: "Access denied" });
-    }
+    // if (!certificate.student_id.equals(student._id)) {
+    //   return res.status(403).json({ error: "Access denied" });
+    // }
 
     if (certificate.status !== "issued") {
       return res.status(400).json({ error: "Certificate not yet issued" });
@@ -451,7 +449,7 @@ const searchCertificateByCode = async (req, res) => {
     if (!code) {
       return res.status(400).json({ error: "Certificate code is required" });
     }
-
+    console.log("code --->", code);
     const certificate = await Certificate.findOne({ unique_hash: code })
       .populate({
         path: "course_id",
@@ -462,7 +460,7 @@ const searchCertificateByCode = async (req, res) => {
       .populate("student_id", "name email")
       .populate("verified_by", "name email")
       .populate("gsp_approved_by", "name email");
-
+    console.log(certificate);
     if (!certificate) {
       return res.status(404).json({ error: "Certificate not found" });
     }

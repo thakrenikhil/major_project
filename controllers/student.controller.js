@@ -108,7 +108,6 @@ const bulkRegisterStudents = async (req, res) => {
         error: "Only nodal officers and admins can register students",
       });
     }
-
     // Check if file is uploaded
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: "Excel file is required" });
@@ -119,49 +118,49 @@ const bulkRegisterStudents = async (req, res) => {
     if (!fileObj) {
       return res.status(400).json({ error: "Excel file is required" });
     }
-
     // Parse Excel file
     let workbook;
     try {
-      workbook = XLSX.read(fileObj.buffer, { type: "buffer" });
+		workbook = XLSX.read(fileObj.buffer, { type: "buffer" });
     } catch (error) {
-      return res.status(400).json({ error: "Invalid Excel file format" });
+		return res.status(400).json({ error: "Invalid Excel file format" });
     }
-
+	
     // Get first sheet
     const sheetName = workbook.SheetNames[0];
     if (!sheetName) {
-      return res.status(400).json({ error: "Excel file is empty" });
+		return res.status(400).json({ error: "Excel file is empty" });
     }
-
+	
     const sheet = workbook.Sheets[sheetName];
     const studentsData = XLSX.utils.sheet_to_json(sheet);
-
+	
     if (!studentsData || studentsData.length === 0) {
-      return res.status(400).json({ error: "No student data found in Excel" });
+		return res.status(400).json({ error: "No student data found in Excel" });
     }
-
+	
     // Validate required columns
     const requiredColumns = [
-      "name",
-      "email",
-      "password",
-      "parents_name",
-      "mobile",
-      "address",
-      "govt_id",
-      "govt_id_type",
+		"name",
+		"email",
+		"password",
+		"parents_name",
+		"mobile",
+		"address",
+		"govt_id",
+		"govt_id_type",
     ];
-
+	
     const firstRow = studentsData[0];
     const missingColumns = requiredColumns.filter((col) => !(col in firstRow));
-
+	
     if (missingColumns.length > 0) {
-      return res.status(400).json({
-        error: `Missing required columns: ${missingColumns.join(", ")}`,
-      });
+		return res.status(400).json({
+			error: `Missing required columns: ${missingColumns.join(", ")}`,
+		});
     }
-
+	
+	console.log("check1");
     // Get node_id from request body or use creator's node_id
     const { node_id } = req.body;
     const userNodeId = node_id || creator.node_id;

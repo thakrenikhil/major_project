@@ -19,7 +19,7 @@ router.get("/", auth, getCertificates);
 router.get(
   "/download/:certificate_id",
   auth,
-  authorize("student"),
+//   authorize("student"),
   downloadCertificate
 );
 router.post("/verify", auth, authorize("nodal_officer"), verifyCertificate);
